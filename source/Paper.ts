@@ -1,3 +1,5 @@
+import { Color } from "./Color.js";
+
 class Paper {
 
     canvas: HTMLCanvasElement;
@@ -20,20 +22,28 @@ class Paper {
         this.imageData = this.ctx.createImageData(window.innerWidth, window.innerHeight);
     }
 
-    getPixel(x: number, y: number) {
+    public getPixel(x: number, y: number): Color {
+        const color: Color = new Color();
+
         const pixelIndex: number = y * this.imageData.width * 4 + x * 4;
-        this.imageData.data[pixelIndex]
+
+        const red: number = this.imageData.data[pixelIndex + 0];
+        const green: number = this.imageData.data[pixelIndex + 1];
+        const blue: number = this.imageData.data[pixelIndex + 2];
+        
+        color.fromValues(red, green, blue);
+        return color;
     }
 
-    setPixel(x: number, y: number, r: number, g: number, b: number, a: number) {
+    public setPixel(x: number, y: number, color: Color): void {
         const pixelIndex: number = y * this.imageData.width * 4 + x * 4;
-        this.imageData.data[pixelIndex + 0] = r;
-        this.imageData.data[pixelIndex + 1] = g;
-        this.imageData.data[pixelIndex + 2] = b;
-        this.imageData.data[pixelIndex + 3] = a;
+        this.imageData.data[pixelIndex + 0] = color.getRed();
+        this.imageData.data[pixelIndex + 1] = color.getGreen();
+        this.imageData.data[pixelIndex + 2] = color.getBlue();
+        this.imageData.data[pixelIndex + 3] = 255;
     }
 
-    draw() {
+    public draw(): void {
         this.ctx.putImageData(this.imageData, 0, 0);
     }
 }
