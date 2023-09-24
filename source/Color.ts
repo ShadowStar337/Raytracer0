@@ -1,10 +1,6 @@
 import { Vector3 } from "./Vector3.js";
 
 class Color extends Vector3 {
-    constructor() {
-        super();
-    }
-
     public fromColor(other: Color): void {
         super.fromVector3(other);
     }

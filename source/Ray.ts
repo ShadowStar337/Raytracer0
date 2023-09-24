@@ -7,9 +7,14 @@ class Ray {
     private origin: Vector3;
     private direction: Vector3;
 
-    constructor() {
+    constructor(origin?: Vector3, direction?: Vector3) {
         this.origin = new Position();
         this.direction = new Direction();
+
+        if (origin !== undefined && direction !== undefined) {
+            this.origin = origin;
+            this.direction = direction;
+        }
     }
 
     public fromValues(origin: Vector3, direction: Vector3): void {
@@ -24,8 +29,8 @@ class Ray {
         return this.direction as Direction;
     }
 
-    public at(t: number): Position {
-        return this.origin.add(this.direction.multiply(t)) as Position;
+    public at(time: number): Position {
+        return this.origin.add(this.direction.multiply(time)) as Position;
     }
 }
 

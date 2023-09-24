@@ -44,16 +44,13 @@ class Paper {
     }
 
     public getPixel(x: number, y: number): Color {
-        const color: Color = new Color();
-
         const pixelIndex: number = y * this.imageData.width * 4 + x * 4;
 
         const red: number = this.imageData.data[pixelIndex + 0];
         const green: number = this.imageData.data[pixelIndex + 1];
         const blue: number = this.imageData.data[pixelIndex + 2];
         
-        color.fromValues(red, green, blue);
-        return color;
+        return new Color(red, green, blue);
     }
 
     public setPixel(x: number, y: number, color: Color): void {

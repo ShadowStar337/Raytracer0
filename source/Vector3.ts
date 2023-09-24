@@ -3,10 +3,16 @@ class Vector3 {
     private y: number;
     private z: number;
 
-    constructor() {
+    constructor(x?: number, y?: number, z?: number) {
         this.x = 0;
         this.y = 0;
         this.z = 0;
+
+        if (x !== undefined && y !== undefined && z !== undefined) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
     }
 
     public fromValues(x: number, y: number, z: number): void {
@@ -72,6 +78,9 @@ class Vector3 {
             newVector3.fromValues(this.x * other, this.y * other, this.z * other);
         }
         return newVector3;
+    }
+    public dot(other: Vector3): number {
+        return this.x * other.getX() + this.y * other.getY() + this.z * other.getZ();
     }
     public normalize(): Vector3 {
         const newVector3: Vector3 = new Vector3();
