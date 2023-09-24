@@ -20,6 +20,9 @@ class Position extends Vector3 {
     public multiply(other: Vector3 | number): Position {
         return super.multiply(other) as Position;
     }
+    public normalize(): Position {
+        return super.normalize() as Position;
+    }
 };
 class Velocity extends Vector3 {
     public fromVelocity(other: Velocity): void {
@@ -41,6 +44,9 @@ class Velocity extends Vector3 {
     public multiply(other: Vector3 | number): Velocity {
         return super.multiply(other) as Velocity;
     }
+    public normalize(): Velocity {
+        return super.normalize() as Velocity;
+    }
 };
 class Acceleration extends Vector3 {
     public fromAcceleration(other: Acceleration): void {
@@ -61,6 +67,9 @@ class Acceleration extends Vector3 {
     }
     public multiply(other: Vector3 | number): Acceleration {
         return super.multiply(other) as Acceleration;
+    }
+    public normalize(): Acceleration {
+        return super.normalize() as Acceleration;
     }
 };
 

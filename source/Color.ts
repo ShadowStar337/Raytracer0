@@ -34,6 +34,9 @@ class Color extends Vector3 {
     public multiply(other: Vector3 | number): Color {
         return super.multiply(other) as Color;
     }
+    public normalize(): Color {
+        return super.normalize() as Color;
+    }
 }
 
 export { Color };

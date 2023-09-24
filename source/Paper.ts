@@ -2,14 +2,24 @@ import { Color } from "./Color.js";
 
 class Paper {
 
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-    imageData: ImageData;
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private imageData: ImageData;
+
+    private canvasWidth: number;
+    private canvasHeight: number;
+    private aspectRatio: number;
 
     constructor() {
         this.canvas = document.createElement("canvas");
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+
+        this.canvasWidth = window.innerWidth > 0 ? window.innerWidth : 1;
+        this.canvasHeight = window.innerHeight > 0 ? window.innerHeight : 1;
+        this.aspectRatio = this.canvasWidth / this.canvasHeight;
+
+        this.canvas.width = this.canvasWidth;
+        this.canvas.height = this.canvasHeight;
+
         document.body.insertBefore(this.canvas, null);
 
         const nullCtx: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
@@ -19,7 +29,18 @@ class Paper {
 
         this.ctx = nullCtx;
 
-        this.imageData = this.ctx.createImageData(window.innerWidth, window.innerHeight);
+        this.imageData = this.ctx.createImageData(this.canvasWidth, this.canvasHeight);
+    }
+
+    public getAspectRatio(): number {
+        return this.aspectRatio;
+    }
+
+    public getCanvasWidth(): number {
+        return this.canvasWidth;
+    }
+    public getCanvasHeight(): number {
+        return this.canvasHeight;
     }
 
     public getPixel(x: number, y: number): Color {

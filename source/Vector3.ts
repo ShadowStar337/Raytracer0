@@ -73,6 +73,14 @@ class Vector3 {
         }
         return newVector3;
     }
+    public normalize(): Vector3 {
+        const newVector3: Vector3 = new Vector3();
+
+        const max: number = Math.max(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
+        newVector3.fromValues(this.x / max, this.y / max, this.z / max);
+
+        return newVector3;
+    }
 }
 
 export { Vector3 };

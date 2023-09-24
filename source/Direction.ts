@@ -20,6 +20,9 @@ class Direction extends Vector3 {
     public multiply(other: Vector3 | number): Direction {
         return super.multiply(other) as Direction;
     }
+    public normalize(): Direction {
+        return super.normalize() as Direction;
+    }
 }
 
 export { Direction };
