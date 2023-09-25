@@ -1,14 +1,16 @@
-import { Paper } from "./Paper.js";
-import { Position } from "./Kinematics.js";
-import { Vector3 } from "./Vector3.js";
-import { Ray } from "./Ray.js";
-import { Color } from "./Color.js";
-import { Sphere } from "./Entity.js";
-import { Direction } from "./Direction.js";
-import { HitInformation } from "./HitInformation.js";
+import { FrameBuffer } from "./FrameBuffer.js";
+import { Position } from "../Geometry/Position.js";
+import { Vector3 } from "../Generic/Vector3.js";
+import { Ray } from "../Geometry/Ray.js";
+import { Color } from "../Geometry/Color.js";
+import { Sphere } from "../Entity/Sphere.js";
+import { HitInformation } from "../Geometry/HitInformation.js";
+import { EntityManager } from "../Entity/EntityManager.js";
+import { Entity } from "../Entity/Entity.js";
 
 class Renderer {
-    paper: Paper;
+    FrameBuffer: FrameBuffer;
+    entityManager: EntityManager;
 
     canvasHeight: number;
     canvasWidth: number;
@@ -18,14 +20,19 @@ class Renderer {
     viewportWidth: number;
 
     constructor() {
-        this.paper = new Paper();
+        this.FrameBuffer = new FrameBuffer();
+        this.entityManager = new EntityManager();
 
-        this.canvasHeight = this.paper.getCanvasHeight();
-        this.canvasWidth = this.paper.getCanvasWidth();
-        this.aspectRatio = this.paper.getAspectRatio();
+        this.canvasHeight = this.FrameBuffer.getCanvasHeight();
+        this.canvasWidth = this.FrameBuffer.getCanvasWidth();
+        this.aspectRatio = this.FrameBuffer.getAspectRatio();
 
         this.viewportHeight = 2;
         this.viewportWidth = this.aspectRatio * this.viewportHeight;
+    }
+
+    public addEntity(entity: Entity) {
+        this.entityManager.addEntity(entity);
     }
 
     public draw() {
@@ -51,11 +58,10 @@ class Renderer {
                 const ray: Ray = new Ray(cameraPos, viewportPoint.add(cameraPos.negate()).normalize());
     
                 const color: Color = new Color();
-                const hitInformation: HitInformation = sphere.hit(ray)
+                const hitInformation: HitInformation = this.entityManager.hit(ray, 0, Number.MAX_SAFE_INTEGER);
 
-                if (hitInformation.hit) {
-                    const normal: Vector3 = ray.at(hitInformation.time).add(sphere.getCenter().negate()).normalize();
-                    color.fromVector3(normal.multiply(255));
+                if (hitInformation.getHit()) {
+                    color.fromVector3(hitInformation.getNormal().multiply(255));
                 } else {
                     const normalizedY: number = (ray.getDirection().getY() + 1) * 0.5;
                     const blue: Color = new Color(0, 0, 255);
@@ -64,7 +70,7 @@ class Renderer {
                     color.fromVector3(blend);
                 }
     
-                this.paper.setPixel(j, i, color);
+                this.FrameBuffer.setPixel(j, i, color);
             }
     
             if (i / window.innerHeight > previousProgress + 0.1) {
@@ -73,7 +79,7 @@ class Renderer {
             }
         }
 
-        this.paper.draw();
+        this.FrameBuffer.draw();
     }
 
     

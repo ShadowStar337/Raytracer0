@@ -1,4 +1,4 @@
-import { Vector3 } from "./Vector3.js";
+import { Vector3 } from "../Generic/Vector3.js";
 
 class Color extends Vector3 {
     public fromColor(other: Color): void {

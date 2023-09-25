@@ -1,4 +1,4 @@
-import { Vector3 } from "./Vector3.js";
+import { Vector3 } from "../Generic/Vector3.js";
 
 class Direction extends Vector3 {
     public fromDirection(other: Direction): void {

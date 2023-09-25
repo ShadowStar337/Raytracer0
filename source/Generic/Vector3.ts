@@ -7,11 +7,16 @@ class Vector3 {
         this.x = 0;
         this.y = 0;
         this.z = 0;
-
-        if (x !== undefined && y !== undefined && z !== undefined) {
+        
+        let filledParameters: boolean;
+        if (filledParameters = x !== undefined && y !== undefined && z !== undefined) {
             this.x = x;
             this.y = y;
             this.z = z;
+        }
+
+        if (x !== undefined && !filledParameters) {
+            throw new Error("[Vector3]: Not all required parameters are filled.");
         }
     }
 

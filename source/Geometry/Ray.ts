@@ -1,5 +1,5 @@
-import { Vector3 } from "./Vector3.js";
-import { Position } from "./Kinematics.js";
+import { Vector3 } from "../Generic/Vector3.js";
+import { Position } from "./Position.js";
 import { Direction } from "./Direction.js";
 
 class Ray {

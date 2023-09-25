@@ -1,6 +1,6 @@
-import { Color } from "./Color.js";
+import { Color } from "../Geometry/Color.js";
 
-class Paper {
+class FrameBuffer {
 
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -66,4 +66,4 @@ class Paper {
     }
 }
 
-export { Paper };
+export { FrameBuffer };
