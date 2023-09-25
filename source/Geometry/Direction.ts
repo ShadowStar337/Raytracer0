@@ -6,22 +6,22 @@ class Direction extends Vector3 {
     }
 
     public clone(): Direction {
-        return super.clone() as Direction;
+        return new Direction(super.clone());
     }
     public negate(): Direction {
-        return super.negate() as Direction;
+        return new Direction(super.negate());
     }
     public reciprocate(): Direction {
-        return super.reciprocate() as Direction;
+        return new Direction(super.reciprocate());
     }
     public add(other: Vector3 | number): Direction {
-        return super.add(other) as Direction;
+        return new Direction(super.add(other));
     }
     public multiply(other: Vector3 | number): Direction {
-        return super.multiply(other) as Direction;
+        return new Direction(super.multiply(other));
     }
     public normalize(): Direction {
-        return super.normalize() as Direction;
+        return new Direction(super.normalize());
     }
 }
 

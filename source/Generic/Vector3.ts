@@ -3,19 +3,26 @@ class Vector3 {
     private y: number;
     private z: number;
 
-    constructor(x?: number, y?: number, z?: number) {
+    constructor(x?: number | Vector3, y?: number, z?: number) {
         this.x = 0;
         this.y = 0;
         this.z = 0;
+
+        const noParameters: boolean = x === undefined && y === undefined && z === undefined;
         
+        let oneParameter: boolean;
+        if (oneParameter = x instanceof Vector3 && y === undefined && z === undefined) {
+            this.fromVector3(x);
+        }
+
         let filledParameters: boolean;
-        if (filledParameters = x !== undefined && y !== undefined && z !== undefined) {
+        if (filledParameters = typeof x === "number" && y !== undefined  && z !== undefined) {
             this.x = x;
             this.y = y;
             this.z = z;
         }
 
-        if (x !== undefined && !filledParameters) {
+        if (!noParameters && !filledParameters && !oneParameter) {
             throw new Error("[Vector3]: Not all required parameters are filled.");
         }
     }

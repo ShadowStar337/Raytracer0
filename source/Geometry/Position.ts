@@ -6,22 +6,22 @@ class Position extends Vector3 {
     }
 
     public clone(): Position {
-        return super.clone() as Position;
+        return new Position(super.clone());
     }
     public negate(): Position {
-        return super.negate() as Position;
+        return new Position(super.negate());
     }
     public reciprocate(): Position {
-        return super.reciprocate() as Position;
+        return new Position(super.reciprocate());
     }
     public add(other: Vector3 | number): Position {
-        return super.add(other) as Position;
+        return new Position(super.add(other));
     }
     public multiply(other: Vector3 | number): Position {
-        return super.multiply(other) as Position;
+        return new Position(super.multiply(other));
     }
     public normalize(): Position {
-        return super.normalize() as Position;
+        return new Position(super.normalize());
     }
 };
 

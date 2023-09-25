@@ -16,22 +16,22 @@ class Color extends Vector3 {
     }
 
     public clone(): Color {
-        return super.clone() as Color;
+        return new Color(super.clone());
     }
     public negate(): Color {
-        return super.negate() as Color;
+        return new Color(super.negate());
     }
     public reciprocate(): Color {
-        return super.reciprocate() as Color;
+        return new Color(super.reciprocate());
     }
     public add(other: Vector3 | number): Color {
-        return super.add(other) as Color;
+        return new Color(super.add(other));
     }
     public multiply(other: Vector3 | number): Color {
-        return super.multiply(other) as Color;
+        return new Color(super.multiply(other));
     }
     public normalize(): Color {
-        return super.normalize() as Color;
+        return new Color(super.normalize());
     }
 }
 

@@ -23,7 +23,7 @@ class FrameBuffer {
         document.body.insertBefore(this.canvas, null);
 
         const nullCtx: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
-        if (nullCtx == null) {
+        if (nullCtx === null) {
             throw new Error("[main]: nullCtx is null.");
         }
 

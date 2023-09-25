@@ -8,15 +8,22 @@ class HitInformation {
     private normal: Vector3;
     private outwardFace: boolean;
 
-    constructor(hit?: boolean, position?: Position, time?: number, normal?: Vector3, outwardFace?: boolean) {
+    constructor(hit?: boolean | HitInformation, position?: Position, time?: number, normal?: Vector3, outwardFace?: boolean) {
         this.hit = false;
         this.position = new Position();
         this.time = 0;
         this.normal = new Vector3();
         this.outwardFace = false;
+
+        const noParameters: boolean = hit === undefined && position === undefined && time === undefined && normal === undefined && outwardFace === undefined;
+
+        let oneParameter: boolean;
+        if (oneParameter = hit instanceof HitInformation && position === undefined && time === undefined && normal === undefined && outwardFace === undefined) {
+            this.fromHitInformation(hit);
+        }
         
         let filledParameters: boolean;
-        if (filledParameters = hit !== undefined && position !== undefined && time !== undefined && normal !== undefined && outwardFace !== undefined) {
+        if (filledParameters = typeof hit === "boolean" && position !== undefined && time !== undefined && normal !== undefined && outwardFace !== undefined) {
             this.hit = hit;
             this.position = position;
             this.time = time;
@@ -24,7 +31,7 @@ class HitInformation {
             this.outwardFace = outwardFace;
         }
 
-        if (hit !== undefined && !filledParameters) {
+        if (!noParameters && !oneParameter && !filledParameters) {
             throw new Error("[HitInformation]: Not all required parameters are filled.");
         }
     }

@@ -6,22 +6,22 @@ class Acceleration extends Vector3 {
     }
 
     public clone(): Acceleration {
-        return super.clone() as Acceleration;
+        return new Acceleration(super.clone());
     }
     public negate(): Acceleration {
-        return super.negate() as Acceleration;
+        return new Acceleration(super.negate());
     }
     public reciprocate(): Acceleration {
-        return super.reciprocate() as Acceleration;
+        return new Acceleration(super.reciprocate());
     }
     public add(other: Vector3 | number): Acceleration {
-        return super.add(other) as Acceleration;
+        return new Acceleration(super.add(other));
     }
     public multiply(other: Vector3 | number): Acceleration {
-        return super.multiply(other) as Acceleration;
+        return new Acceleration(super.multiply(other));
     }
     public normalize(): Acceleration {
-        return super.normalize() as Acceleration;
+        return new Acceleration(super.normalize());
     }
 };
 

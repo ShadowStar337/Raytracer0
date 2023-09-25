@@ -7,19 +7,36 @@ class Ray {
     private origin: Vector3;
     private direction: Vector3;
 
-    constructor(origin?: Vector3, direction?: Vector3) {
+    constructor(origin?: Vector3 | Ray, direction?: Vector3) {
         this.origin = new Position();
         this.direction = new Direction();
 
-        if (origin !== undefined && direction !== undefined) {
+        const noParameters: boolean = origin === undefined && direction === undefined;
+
+        let oneParameter: boolean;
+        if (oneParameter = origin instanceof Ray && direction === undefined) {
+            this.fromRay(origin);
+        }
+        
+        let filledParameters: boolean;
+        if (filledParameters = origin instanceof Vector3 && direction !== undefined) {
             this.origin = origin;
             this.direction = direction;
+        }
+
+        if (!noParameters && !oneParameter && !filledParameters) {
+            throw new Error("[Ray]: Not all required parameters are filled.");
         }
     }
 
     public fromValues(origin: Vector3, direction: Vector3): void {
         this.origin = origin;
         this.direction = direction;
+    }
+
+    public fromRay(other: Ray): void {
+        this.origin = other.origin;
+        this.direction = other.direction;
     }
 
     public getOrigin(): Position {

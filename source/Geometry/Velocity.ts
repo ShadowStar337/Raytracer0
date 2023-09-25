@@ -6,22 +6,22 @@ class Velocity extends Vector3 {
     }
 
     public clone(): Velocity {
-        return super.clone() as Velocity;
+        return new Velocity(super.clone());
     }
     public negate(): Velocity {
-        return super.negate() as Velocity;
+        return new Velocity(super.negate());
     }
     public reciprocate(): Velocity {
-        return super.reciprocate() as Velocity;
+        return new Velocity(super.reciprocate());
     }
     public add(other: Vector3 | number): Velocity {
-        return super.add(other) as Velocity;
+        return new Velocity(super.add(other));
     }
     public multiply(other: Vector3 | number): Velocity {
-        return super.multiply(other) as Velocity;
+        return new Velocity(super.multiply(other));
     }
     public normalize(): Velocity {
-        return super.normalize() as Velocity;
+        return new Velocity(super.normalize());
     }
 };
 
