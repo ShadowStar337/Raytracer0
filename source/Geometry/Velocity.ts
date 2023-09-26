@@ -20,6 +20,9 @@ class Velocity extends Vector3 {
     public multiply(other: Vector3 | number): Velocity {
         return new Velocity(super.multiply(other));
     }
+    public exponentiate(other: Vector3 | number): Velocity {
+        return new Velocity(super.exponentiate(other));
+    }
     public normalize(): Velocity {
         return new Velocity(super.normalize());
     }

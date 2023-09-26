@@ -30,6 +30,9 @@ class Color extends Vector3 {
     public multiply(other: Vector3 | number): Color {
         return new Color(super.multiply(other));
     }
+    public exponentiate(other: Vector3 | number): Color {
+        return new Color(super.exponentiate(other));
+    }
     public normalize(): Color {
         return new Color(super.normalize());
     }

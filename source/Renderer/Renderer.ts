@@ -59,7 +59,7 @@ class Renderer {
                 
                 const color: Color = this.samplePixel(viewportStart, deltaHeight.multiply(i).add(deltaWidth.multiply(j)), deltaWidth, deltaHeight);
 
-                this.FrameBuffer.setPixel(j, i, color);
+                this.FrameBuffer.setPixel(j, i, this.linearToGamma(color).multiply(255));
             }
     
             if (i / this.canvasHeight > previousProgress + 0.1) {
@@ -72,6 +72,10 @@ class Renderer {
         console.log("Milliseconds taken to render image:", endTime.getTime() - startTime.getTime());
 
         this.FrameBuffer.draw();
+    }
+
+    private linearToGamma(color: Color): Color {
+        return color.exponentiate(1 / 2);
     }
 
     private samplePixel(viewportStart: Position, currentDelta: Vector3, deltaWidth: Vector3, deltaHeight: Vector3): Color {
@@ -116,13 +120,12 @@ class Renderer {
             // const surfaceVector: Vector3 = surfaceNormal.dot(randomVector) > 0 ? randomVector : randomVector.negate();
             const surfaceVector: Vector3 = surfaceNormal.add(randomVector);
             
-            // return new Color(hitInformation.getNormal().multiply(255));
-            return this.traceRay(new Ray(hitInformation.getPosition(), surfaceVector), depth - 1).multiply(0.5);
+            return this.traceRay(new Ray(hitInformation.getPosition(), surfaceVector), depth - 1).multiply(0.3);
         }
 
         const normalizedY: number = (ray.getDirection().getY() + 1) * 0.5;
-        const blue: Color = new Color(127, 178, 255);
-        const white: Color = new Color(255, 255, 255);
+        const blue: Color = new Color(0.5, 0.7, 1);
+        const white: Color = new Color(1, 1, 1);
         return white.multiply(1 - normalizedY).add(blue.multiply(normalizedY));
     }
 }

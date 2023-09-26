@@ -19,8 +19,8 @@ class FrameBuffer {
 
         this.canvas = document.createElement("canvas");
 
-        this.canvasWidth = window.innerWidth > 0 ? window.innerWidth * Globals.canvasXScale : 1;
-        this.canvasHeight = window.innerHeight > 0 ? window.innerHeight * Globals.canvasYScale : 1;
+        this.canvasWidth = Globals.canvasWidth;
+        this.canvasHeight = Globals.canvasHeight;
         this.aspectRatio = this.canvasWidth / this.canvasHeight;
 
         this.canvas.width = this.canvasWidth;

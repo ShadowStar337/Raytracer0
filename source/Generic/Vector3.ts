@@ -90,6 +90,12 @@ class Vector3 {
         }
         return new Vector3(this.x * other, this.y * other, this.z * other);
     }
+    public exponentiate(other: Vector3 | number): Vector3 {
+        if (other instanceof Vector3) {
+            return new Vector3(Math.pow(this.x, other.x), Math.pow(this.y, other.y), Math.pow(this.z, other.z));
+        }
+        return new Vector3(Math.pow(this.x, other), Math.pow(this.y, other), Math.pow(this.z, other));
+    }
     public dot(other: Vector3): number {
         return this.x * other.getX() + this.y * other.getY() + this.z * other.getZ();
     }

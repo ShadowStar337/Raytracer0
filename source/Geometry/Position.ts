@@ -20,6 +20,9 @@ class Position extends Vector3 {
     public multiply(other: Vector3 | number): Position {
         return new Position(super.multiply(other));
     }
+    public exponentiate(other: Vector3 | number): Position {
+        return new Position(super.exponentiate(other));
+    }
     public normalize(): Position {
         return new Position(super.normalize());
     }
