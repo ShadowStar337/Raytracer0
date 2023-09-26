@@ -1,3 +1,5 @@
+import { Mathematics } from "./Mathematics.js";
+
 class Vector3 {
     private x: number;
     private y: number;
@@ -37,6 +39,15 @@ class Vector3 {
         this.y = other.getY();
         this.z = other.getZ();
     }
+    public fromRandom(minimum: number, maximum: number): void {
+        this.x = Mathematics.intervalRandom(minimum, maximum);
+        this.y = Mathematics.intervalRandom(minimum, maximum);
+        this.z = Mathematics.intervalRandom(minimum, maximum);
+    }
+    public fromUnitRandom(minimum: number, maximum: number) {
+        this.fromRandom(minimum, maximum);
+        this.fromVector3(this.normalize());
+    }
 
     public getX(): number {
         return this.x;
@@ -59,48 +70,32 @@ class Vector3 {
     }
 
     public clone(): Vector3 {
-        const newVector3: Vector3 = new Vector3();
-        newVector3.fromValues(this.x, this.y, this.z);
-        return newVector3;
+        return new Vector3(this.x, this.y, this.z);
     }
     public negate(): Vector3 {
-        const newVector3: Vector3 = new Vector3();
-        newVector3.fromValues(-this.x, -this.y, -this.z);
-        return newVector3;
+        return new Vector3(-this.x, -this.y, -this.z);
     }
     public reciprocate(): Vector3 {
-        const newVector3: Vector3 = new Vector3();
-        newVector3.fromValues(1 / this.x, 1 / this.y, 1 / this.z);
-        return newVector3;
+        return new Vector3(1 / this.x, 1 / this.y, 1 / this.z);
     }
     public add(other: Vector3 | number): Vector3 {
-        const newVector3: Vector3 = new Vector3();
         if (other instanceof Vector3) {
-            newVector3.fromValues(this.x + other.getX(), this.y + other.getY(), this.z + other.getZ());
-        } else {
-            newVector3.fromValues(this.x + other, this.y + other, this.z + other);
+            return new Vector3(this.x + other.getX(), this.y + other.getY(), this.z + other.getZ());
         }
-        return newVector3;
+        return new Vector3(this.x + other, this.y + other, this.z + other);
     }
     public multiply(other: Vector3 | number): Vector3 {
-        const newVector3: Vector3 = new Vector3();
         if (other instanceof Vector3) {
-            newVector3.fromValues(this.x * other.getX(), this.y * other.getY(), this.z * other.getZ());
-        } else {
-            newVector3.fromValues(this.x * other, this.y * other, this.z * other);
+            return new Vector3(this.x * other.getX(), this.y * other.getY(), this.z * other.getZ());
         }
-        return newVector3;
+        return new Vector3(this.x * other, this.y * other, this.z * other);
     }
     public dot(other: Vector3): number {
         return this.x * other.getX() + this.y * other.getY() + this.z * other.getZ();
     }
     public normalize(): Vector3 {
-        const newVector3: Vector3 = new Vector3();
-
         const max: number = Math.max(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
-        newVector3.fromValues(this.x / max, this.y / max, this.z / max);
-
-        return newVector3;
+        return new Vector3(this.x / max, this.y / max, this.z / max);
     }
 }
 

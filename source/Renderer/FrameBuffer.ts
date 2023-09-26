@@ -1,7 +1,9 @@
 import { Color } from "../Geometry/Color.js";
+import { Globals } from "../Globals.js";
 
 class FrameBuffer {
 
+    private container: HTMLDivElement;
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private imageData: ImageData;
@@ -11,16 +13,20 @@ class FrameBuffer {
     private aspectRatio: number;
 
     constructor() {
+        this.container = document.createElement("div");
+        this.container.className = "containerDiv";
+        document.body.insertBefore(this.container, null);
+
         this.canvas = document.createElement("canvas");
 
-        this.canvasWidth = window.innerWidth > 0 ? window.innerWidth : 1;
-        this.canvasHeight = window.innerHeight > 0 ? window.innerHeight : 1;
+        this.canvasWidth = window.innerWidth > 0 ? window.innerWidth * Globals.canvasXScale : 1;
+        this.canvasHeight = window.innerHeight > 0 ? window.innerHeight * Globals.canvasYScale : 1;
         this.aspectRatio = this.canvasWidth / this.canvasHeight;
 
         this.canvas.width = this.canvasWidth;
         this.canvas.height = this.canvasHeight;
 
-        document.body.insertBefore(this.canvas, null);
+        this.container.insertBefore(this.canvas, null);
 
         const nullCtx: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
         if (nullCtx === null) {
