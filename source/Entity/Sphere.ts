@@ -12,7 +12,7 @@ class Sphere extends Entity {
     constructor(center?: Position, radius?: number) {
         super();
 
-        this.center = new Position();
+        this.center = new Vector3();
         this.radius = 0;
         
         let filledParameters: boolean;
@@ -57,7 +57,9 @@ class Sphere extends Entity {
         
         let foundValidTime: boolean = false;
         let lowestTime: number = Number.MAX_SAFE_INTEGER;
-        for (let i: number = 0; i < times.length; i++) {
+
+        const timesLength: number = times.length;
+        for (let i: number = 0; i < timesLength; i++) {
             const time: number = times[i];
             if (time < minimumTime || time > maximumTime) {
                 continue;

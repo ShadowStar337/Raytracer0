@@ -8,8 +8,8 @@ class Ray {
     private direction: Vector3;
 
     constructor(origin?: Vector3 | Ray, direction?: Vector3) {
-        this.origin = new Position();
-        this.direction = new Direction();
+        this.origin = new Vector3();
+        this.direction = new Vector3();
 
         const noParameters: boolean = origin === undefined && direction === undefined;
 

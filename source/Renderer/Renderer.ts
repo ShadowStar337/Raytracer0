@@ -11,7 +11,7 @@ import { Globals } from "../Globals.js";
 import { Mathematics } from "../Generic/Mathematics.js";
 
 class Renderer {
-    FrameBuffer: FrameBuffer;
+    frameBuffer: FrameBuffer;
     entityManager: EntityManager;
 
     canvasHeight: number;
@@ -23,18 +23,24 @@ class Renderer {
 
     cameraPos: Position;
 
+    backgroundColor1: Color;
+    backgroundColor2: Color;
+
     constructor() {
-        this.FrameBuffer = new FrameBuffer();
+        this.frameBuffer = new FrameBuffer();
         this.entityManager = new EntityManager();
 
-        this.canvasHeight = this.FrameBuffer.getCanvasHeight();
-        this.canvasWidth = this.FrameBuffer.getCanvasWidth();
-        this.aspectRatio = this.FrameBuffer.getAspectRatio();
+        this.canvasHeight = this.frameBuffer.getCanvasHeight();
+        this.canvasWidth = this.frameBuffer.getCanvasWidth();
+        this.aspectRatio = this.frameBuffer.getAspectRatio();
 
         this.viewportHeight = 2;
         this.viewportWidth = this.aspectRatio * this.viewportHeight;
 
-        this.cameraPos = new Position(0, 0, 0);
+        this.cameraPos = new Vector3(0, 0, 0);
+
+        this.backgroundColor1 = new Color(0.5, 0.7, 1);
+        this.backgroundColor2 = new Color(1, 1, 1);
     }
 
     public addEntity(entity: Entity) {
@@ -45,7 +51,7 @@ class Renderer {
         const viewportStartX: number = -this.viewportWidth / 2;
         const viewportStartY: number = this.viewportHeight / 2;
         const viewportStartZ: number = -1;
-        const viewportStart: Position = new Position(viewportStartX, viewportStartY, viewportStartZ);
+        const viewportStart: Position = new Vector3(viewportStartX, viewportStartY, viewportStartZ);
     
         const deltaWidth: Vector3 = new Vector3(this.viewportWidth / this.canvasWidth, 0, 0);
         const deltaHeight: Vector3 = new Vector3(0, -this.viewportHeight / this.canvasHeight, 0);
@@ -59,11 +65,11 @@ class Renderer {
                 
                 const color: Color = this.samplePixel(viewportStart, deltaHeight.multiply(i).add(deltaWidth.multiply(j)), deltaWidth, deltaHeight);
 
-                this.FrameBuffer.setPixel(j, i, this.linearToGamma(color).multiply(255));
+                this.frameBuffer.setPixel(j, i, this.linearToGamma(color).multiply(255));
             }
     
-            if (i / this.canvasHeight > previousProgress + 0.1) {
-                console.log("Progress:", Math.floor(i / this.canvasHeight * 10) / 10);
+            if (i / this.canvasHeight > previousProgress + 0.01) {
+                console.log("Progress:", Math.floor(i / this.canvasHeight * 100) / 100);
                 previousProgress = i / this.canvasHeight;
             }
         }
@@ -71,7 +77,7 @@ class Renderer {
         const endTime: Date = new Date();
         console.log("Milliseconds taken to render image:", endTime.getTime() - startTime.getTime());
 
-        this.FrameBuffer.draw();
+        this.frameBuffer.draw();
     }
 
     private linearToGamma(color: Color): Color {
@@ -94,12 +100,13 @@ class Renderer {
         }
 
         let sampleColorSum: Color = new Color(0, 0, 0);
-        for (let i: number = 0; i < sampleColors.length; i++) {
+        const sampleColorsLength: number = sampleColors.length;
+        for (let i: number = 0; i < sampleColorsLength; i++) {
             const sampleColor: Color = sampleColors[i];
             sampleColorSum = sampleColorSum.add(sampleColor);
         }
         
-        const sampleColorAverage: Color = sampleColorSum.multiply(1 / sampleColors.length);
+        const sampleColorAverage: Color = sampleColorSum.multiply(1 / sampleColorsLength);
 
         return sampleColorAverage;
     }
@@ -124,9 +131,8 @@ class Renderer {
         }
 
         const normalizedY: number = (ray.getDirection().getY() + 1) * 0.5;
-        const blue: Color = new Color(0.5, 0.7, 1);
-        const white: Color = new Color(1, 1, 1);
-        return white.multiply(1 - normalizedY).add(blue.multiply(normalizedY));
+        
+        return this.backgroundColor2.multiply(1 - normalizedY).add(this.backgroundColor1.multiply(normalizedY));
     }
 }
 

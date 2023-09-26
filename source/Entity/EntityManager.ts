@@ -18,7 +18,8 @@ class EntityManager {
         const hitInformation: HitInformation = new HitInformation();
         let lowestTime: number = Number.MAX_SAFE_INTEGER;
 
-        for (let i: number = 0; i < this.entities.length; i++) {
+        const entitiesLength: number = this.entities.length;
+        for (let i: number = 0; i < entitiesLength; i++) {
             const entity: Entity = this.entities[i];
             const entityHitInformation: HitInformation = entity.hit(ray, minimumTime, maximumTime);
             if (entityHitInformation.getHit() && entityHitInformation.getTime() < lowestTime) {

@@ -10,7 +10,7 @@ class HitInformation {
 
     constructor(hit?: boolean | HitInformation, position?: Position, time?: number, normal?: Vector3, outwardFace?: boolean) {
         this.hit = false;
-        this.position = new Position();
+        this.position = new Vector3();
         this.time = 0;
         this.normal = new Vector3();
         this.outwardFace = false;

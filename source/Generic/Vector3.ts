@@ -10,22 +10,34 @@ class Vector3 {
         this.y = 0;
         this.z = 0;
 
-        const noParameters: boolean = x === undefined && y === undefined && z === undefined;
+        // DEBUG
+        // const noParameters: boolean = x === undefined && y === undefined && z === undefined;
         
-        let oneParameter: boolean;
-        if (oneParameter = x instanceof Vector3 && y === undefined && z === undefined) {
+        // let oneParameter: boolean;
+        // if (oneParameter = x instanceof Vector3 && y === undefined && z === undefined) {
+        //     this.fromVector3(x);
+        // }
+
+        // let filledParameters: boolean;
+        // if (filledParameters = typeof x === "number" && y !== undefined  && z !== undefined) {
+        //     this.x = x;
+        //     this.y = y;
+        //     this.z = z;
+        // }
+
+        // if (!noParameters && !filledParameters && !oneParameter) {
+        //     throw new Error("[Vector3]: Not all required parameters are filled.");
+        // }
+
+        // RELEASE
+        if (x instanceof Vector3 && y === undefined && z === undefined) {
             this.fromVector3(x);
         }
 
-        let filledParameters: boolean;
-        if (filledParameters = typeof x === "number" && y !== undefined  && z !== undefined) {
+        if (typeof x === "number" && y !== undefined  && z !== undefined) {
             this.x = x;
             this.y = y;
             this.z = z;
-        }
-
-        if (!noParameters && !filledParameters && !oneParameter) {
-            throw new Error("[Vector3]: Not all required parameters are filled.");
         }
     }
 
