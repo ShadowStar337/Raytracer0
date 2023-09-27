@@ -4,13 +4,14 @@ import { HitInformation } from "../Geometry/HitInformation.js";
 import { Direction } from "../Geometry/Direction.js";
 import { Vector3 } from "../Generic/Vector3.js";
 import { Entity } from "../Entity/Entity.js";
+import { EntityType } from "./EntityType.js";
 
 class Sphere extends Entity {
     private center: Position;
     private radius: number;
 
     constructor(center?: Position, radius?: number) {
-        super();
+        super(EntityType.Sphere);
 
         this.center = new Vector3();
         this.radius = 0;
@@ -86,6 +87,15 @@ class Sphere extends Entity {
         }
 
         return new HitInformation(discriminant > 0, position, lowestTime, normal, outwardFace);
+    }
+
+    public static createFromRaw(other: any): Sphere {
+        const rawCenter: any = other.center;
+        const center: Vector3 = Vector3.createFromRaw(rawCenter);
+
+        const radius: number = other.radius;
+
+        return new Sphere(center, radius);
     }
 }
 

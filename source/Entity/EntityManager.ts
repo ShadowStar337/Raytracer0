@@ -14,6 +14,10 @@ class EntityManager {
         this.entities.push(entity);
     }
 
+    public getEntities(): Entity[] {
+        return this.entities;
+    }
+
     public hit(ray: Ray, minimumTime: number, maximumTime: number): HitInformation {
         const hitInformation: HitInformation = new HitInformation();
         let lowestTime: number = Number.MAX_SAFE_INTEGER;

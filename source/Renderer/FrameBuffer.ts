@@ -1,16 +1,13 @@
 import { Color } from "../Geometry/Color.js";
-import { Globals } from "../Globals.js";
+import { RenderConfig } from "../RenderConfig.js";
 
 class FrameBuffer {
 
     private container: HTMLDivElement;
     private canvas: HTMLCanvasElement;
+    private progress: HTMLSpanElement;
     private ctx: CanvasRenderingContext2D;
     private imageData: ImageData;
-
-    private canvasWidth: number;
-    private canvasHeight: number;
-    private aspectRatio: number;
 
     constructor() {
         this.container = document.createElement("div");
@@ -19,14 +16,15 @@ class FrameBuffer {
 
         this.canvas = document.createElement("canvas");
 
-        this.canvasWidth = Globals.canvasWidth;
-        this.canvasHeight = Globals.canvasHeight;
-        this.aspectRatio = this.canvasWidth / this.canvasHeight;
-
-        this.canvas.width = this.canvasWidth;
-        this.canvas.height = this.canvasHeight;
+        this.canvas.width = RenderConfig.canvasWidth;
+        this.canvas.height = RenderConfig.canvasHeight;
 
         this.container.insertBefore(this.canvas, null);
+
+        this.progress = document.createElement("span");
+        this.progress.className = "progressSpan";
+
+        this.container.insertBefore(this.progress, null);
 
         const nullCtx: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
         if (nullCtx === null) {
@@ -35,18 +33,7 @@ class FrameBuffer {
 
         this.ctx = nullCtx;
 
-        this.imageData = this.ctx.createImageData(this.canvasWidth, this.canvasHeight);
-    }
-
-    public getAspectRatio(): number {
-        return this.aspectRatio;
-    }
-
-    public getCanvasWidth(): number {
-        return this.canvasWidth;
-    }
-    public getCanvasHeight(): number {
-        return this.canvasHeight;
+        this.imageData = this.ctx.createImageData(RenderConfig.canvasWidth, RenderConfig.canvasHeight);
     }
 
     public getPixel(x: number, y: number): Color {
@@ -65,6 +52,10 @@ class FrameBuffer {
         this.imageData.data[pixelIndex + 1] = color.getGreen();
         this.imageData.data[pixelIndex + 2] = color.getBlue();
         this.imageData.data[pixelIndex + 3] = 255;
+    }
+
+    public updateProgress(): void {
+        this.progress.innerHTML = "Progress: " + this.updateProgress();
     }
 
     public draw(): void {

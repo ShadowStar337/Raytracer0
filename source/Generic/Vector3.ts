@@ -115,6 +115,10 @@ class Vector3 {
         const max: number = Math.max(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
         return new Vector3(this.x / max, this.y / max, this.z / max);
     }
+
+    public static createFromRaw(other: any): Vector3 {
+        return new Vector3(other.x, other.y, other.z);
+    }
 }
 
 export { Vector3 };

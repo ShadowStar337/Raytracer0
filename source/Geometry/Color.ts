@@ -115,6 +115,10 @@ class Color {
         const max: number = Math.max(Math.abs(this.red), Math.abs(this.green), Math.abs(this.blue));
         return new Color(this.red / max, this.green / max, this.blue / max);
     }
+
+    public static createFromRaw(other: any): Color {
+        return new Color(other.red, other.green, other.blue);
+    }
 }
 
 export { Color };

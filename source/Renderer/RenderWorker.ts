@@ -6,102 +6,68 @@ import { Color } from "../Geometry/Color.js";
 import { HitInformation } from "../Geometry/HitInformation.js";
 import { EntityManager } from "../Entity/EntityManager.js";
 import { Entity } from "../Entity/Entity.js";
+import { Sphere } from "../Entity/Sphere.js";
 import { RenderConfig } from "../RenderConfig.js";
 import { Mathematics } from "../Generic/Mathematics.js";
-import { WorkerMessage } from "./WorkerMessage.js";
+import { EntityType } from "../Entity/EntityType.js";
 
-class Renderer {
-    frameBuffer: FrameBuffer;
-    entityManager: EntityManager;
+class RenderWorker {
+    private cameraPosition: Position;
+    private entityManager: EntityManager;
+    private startPosition: Position;
+    private endPosition: Position;
 
-    cameraPosition: Position;
+    private imageData: number[];
 
     backgroundColor1: Color;
     backgroundColor2: Color;
 
-    renderWorkerCount: number;
+    constructor(cameraPosition: Vector3, entityManager: EntityManager, startPosition: Position, endPosition: Position) {
+        this.cameraPosition = cameraPosition;
+        this.entityManager = entityManager;
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
 
-    startTime: Date;
-    endTime: Date;
+        this.imageData = [];
 
-    constructor() {
-        this.frameBuffer = new FrameBuffer();
-        this.entityManager = new EntityManager();
-
-        this.cameraPosition = new Vector3(0, 0, 0);
-
-        this.backgroundColor1 = new Color(0.5, 0.7, 1);
+        this.backgroundColor1 = new Color(0.5, 0.7, 1.0);
         this.backgroundColor2 = new Color(1, 1, 1);
-
-        this.renderWorkerCount = 0;
-
-        this.startTime = new Date();
-        this.endTime = new Date();
-    }
-
-    public addEntity(entity: Entity): void {
-        this.entityManager.addEntity(entity);
     }
 
     public draw(): void {
         const viewportStartX: number = -RenderConfig.viewportWidth / 2;
         const viewportStartY: number = RenderConfig.viewportHeight / 2;
+
         const viewportStartZ: number = -1;
         const viewportStart: Position = new Vector3(viewportStartX, viewportStartY, viewportStartZ);
-    
+
         const deltaWidth: Vector3 = new Vector3(RenderConfig.viewportWidth / RenderConfig.canvasWidth, 0, 0);
         const deltaHeight: Vector3 = new Vector3(0, -RenderConfig.viewportHeight / RenderConfig.canvasHeight, 0);
-    
-        this.startTime = new Date();
 
-        let previousProgress: number = 0;
+        const startX: number = this.startPosition.getX();
+        const startY: number = this.startPosition.getY();
+        const endX: number = this.endPosition.getX();
+        const endY: number = this.endPosition.getY();
 
-        for (let i: number = 0; i < 10; i++) {
-            const worker: Worker = new Worker("./js/Renderer/RenderWorker.js", { type: "module" });
+        for (let i: number = startY; i < endY; i++) {
+            for (let j: number = startX; j < endX; j++) {
+                const color: Color = this.samplePixel(viewportStart, deltaHeight.multiply(i).add(deltaWidth.multiply(j)), deltaWidth, deltaHeight);
 
-            const startPosition: Position = new Vector3(0, Math.floor(RenderConfig.canvasHeight / RenderConfig.threads) * i, 0);
-            const endPosition: Position = new Vector3(RenderConfig.canvasWidth, Math.floor(RenderConfig.canvasHeight / RenderConfig.threads) * (i + 1), 0);
-
-            worker.postMessage([
-                new WorkerMessage(this.cameraPosition, this.entityManager, startPosition, endPosition)
-            ]);
-
-            this.renderWorkerCount += 1;
-
-            worker.onmessage = (e: any): void => {
-                worker.terminate();
-                this.renderWorkerCount -= 1;
-
-                const startX: number = startPosition.getX();
-                const startY: number = startPosition.getY();
-                const endX: number = endPosition.getX();
-                const endY: number = endPosition.getY();
-
-                for (let i: number = startY; i < endY; i++) {
-                    for (let j: number = startX; j < endX; j++) {
-                        const pixelIndex: number = i * RenderConfig.canvasWidth * 4 + j * 4;
-                        const color: Color = new Color(e.data[pixelIndex], e.data[pixelIndex + 1], e.data[pixelIndex + 2]);
-
-                        this.frameBuffer.setPixel(j, i, this.linearToGamma(color).multiply(255));
-                    }
-                }
-
-                if (this.renderWorkerCount == 0) {
-                    this.endTime = new Date();
-                    console.log("Milliseconds taken to render image:", this.endTime.getTime() - this.startTime.getTime());
-
-                    this.frameBuffer.draw();
-                }
+                this.setPixel(j, i, color);
             }
         }
-
-        
-
-        this.frameBuffer.draw();
     }
 
-    private linearToGamma(color: Color): Color {
-        return color.exponentiate(1 / 2);
+    public getImageData(): number[] {
+        return this.imageData;
+    }
+
+    public setPixel(x: number, y: number, color: Color): void {
+        const pixelIndex: number = y * RenderConfig.canvasWidth * 4 + x * 4;
+        this.imageData[pixelIndex + 0] = color.getRed();
+        this.imageData[pixelIndex + 1] = color.getGreen();
+        this.imageData[pixelIndex + 2] = color.getBlue();
+        this.imageData[pixelIndex + 3] = 1;
     }
 
     private samplePixel(viewportStart: Position, currentDelta: Vector3, deltaWidth: Vector3, deltaHeight: Vector3): Color {
@@ -156,4 +122,35 @@ class Renderer {
     }
 }
 
-export { Renderer };
+onmessage = function(e: any): void {
+    const workerMessage: any = e.data[0];
+
+    const otherCameraPosition: any = workerMessage.cameraPosition;
+    const cameraPosition: Position = Vector3.createFromRaw(otherCameraPosition);
+
+    const otherEntityManager: any = workerMessage.entityManager;
+    const entityManager: EntityManager = new EntityManager();
+
+    const otherEntitiesLength: number = otherEntityManager.entities.length;
+    for (let i: number = 0; i < otherEntitiesLength; i++) {
+        const otherRawEntity: any = otherEntityManager.entities[i];
+
+        switch (otherRawEntity.type) {
+            case EntityType.Sphere:
+                const otherEntity: Sphere = Sphere.createFromRaw(otherRawEntity);
+                entityManager.addEntity(otherEntity);
+                break;
+        }
+    }
+
+    const otherStartPosition: any = workerMessage.startPosition;
+    const startPosition: Position = Vector3.createFromRaw(otherStartPosition);
+
+    const otherEndPosition: any = workerMessage.endPosition;
+    const endPosition: Position = Vector3.createFromRaw(otherEndPosition);
+
+    const renderWorker: RenderWorker = new RenderWorker(cameraPosition, entityManager, startPosition, endPosition);
+    renderWorker.draw();
+
+    this.postMessage(renderWorker.getImageData());
+}
