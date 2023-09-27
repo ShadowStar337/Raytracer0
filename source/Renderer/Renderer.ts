@@ -56,7 +56,7 @@ class Renderer {
 
         let previousProgress: number = 0;
 
-        for (let i: number = 0; i < 10; i++) {
+        for (let i: number = 0; i < RenderConfig.threads; i++) {
             const worker: Worker = new Worker("./js/Renderer/RenderWorker.js", { type: "module" });
 
             const startPosition: Position = new Vector3(0, Math.floor(RenderConfig.canvasHeight / RenderConfig.threads) * i, 0);
