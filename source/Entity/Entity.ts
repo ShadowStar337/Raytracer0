@@ -2,16 +2,14 @@ import { Ray } from "../Geometry/Ray.js";
 import { HitInformation } from "../Geometry/HitInformation.js";
 import { EntityType } from "./EntityType.js";
 
-class Entity {
+abstract class Entity {
     type: EntityType;
 
     constructor(type: EntityType) {
         this.type = type;
     }
 
-    public hit(ray: Ray, minimumTime: number, maximumTime: number): HitInformation {
-        return new HitInformation();
-    }
+    public abstract hit(ray: Ray, minimumTime: number, maximumTime: number): HitInformation;
 }
 
 export { Entity };

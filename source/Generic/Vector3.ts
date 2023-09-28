@@ -6,6 +6,21 @@ class Vector3 {
     private z: number;
 
     constructor(x?: number | Vector3, y?: number, z?: number) {
+        // RELEASE
+        if (x instanceof Vector3 && y === undefined && z === undefined) {
+            this.x = x.x;
+            this.y = x.y;
+            this.z = x.z;
+            return;
+        }
+
+        if (typeof x === "number" && y !== undefined  && z !== undefined) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            return;
+        }
+
         this.x = 0;
         this.y = 0;
         this.z = 0;
@@ -28,17 +43,6 @@ class Vector3 {
         // if (!noParameters && !filledParameters && !oneParameter) {
         //     throw new Error("[Vector3]: Not all required parameters are filled.");
         // }
-
-        // RELEASE
-        if (x instanceof Vector3 && y === undefined && z === undefined) {
-            this.fromVector3(x);
-        }
-
-        if (typeof x === "number" && y !== undefined  && z !== undefined) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
     }
 
     public fromValues(x: number, y: number, z: number): void {
@@ -47,9 +51,9 @@ class Vector3 {
         this.z = z;
     }
     public fromVector3(other: Vector3): void {
-        this.x = other.getX();
-        this.y = other.getY();
-        this.z = other.getZ();
+        this.x = other.x;
+        this.y = other.y;
+        this.z = other.z;
     }
     public fromRandom(minimum: number, maximum: number): void {
         this.x = Mathematics.intervalRandom(minimum, maximum);
@@ -92,13 +96,13 @@ class Vector3 {
     }
     public add(other: Vector3 | number): Vector3 {
         if (other instanceof Vector3) {
-            return new Vector3(this.x + other.getX(), this.y + other.getY(), this.z + other.getZ());
+            return new Vector3(this.x + other.x, this.y + other.y, this.z + other.z);
         }
         return new Vector3(this.x + other, this.y + other, this.z + other);
     }
     public multiply(other: Vector3 | number): Vector3 {
         if (other instanceof Vector3) {
-            return new Vector3(this.x * other.getX(), this.y * other.getY(), this.z * other.getZ());
+            return new Vector3(this.x * other.x, this.y * other.y, this.z * other.z);
         }
         return new Vector3(this.x * other, this.y * other, this.z * other);
     }
@@ -109,7 +113,7 @@ class Vector3 {
         return new Vector3(Math.pow(this.x, other), Math.pow(this.y, other), Math.pow(this.z, other));
     }
     public dot(other: Vector3): number {
-        return this.x * other.getX() + this.y * other.getY() + this.z * other.getZ();
+        return this.x * other.x + this.y * other.y + this.z * other.z;
     }
     public normalize(): Vector3 {
         const max: number = Math.max(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));

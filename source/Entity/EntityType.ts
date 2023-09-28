@@ -1,5 +1,5 @@
 enum EntityType {
-    Sphere
+    None, Sphere
 }
 
 export { EntityType };

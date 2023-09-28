@@ -1,15 +1,15 @@
-import { FrameBuffer } from "./FrameBuffer.js";
 import { Position } from "../Geometry/Position.js";
 import { Vector3 } from "../Generic/Vector3.js";
 import { Ray } from "../Geometry/Ray.js";
 import { Color } from "../Geometry/Color.js";
 import { HitInformation } from "../Geometry/HitInformation.js";
 import { EntityManager } from "../Entity/EntityManager.js";
-import { Entity } from "../Entity/Entity.js";
 import { Sphere } from "../Entity/Sphere.js";
 import { RenderConfig } from "../RenderConfig.js";
 import { Mathematics } from "../Generic/Mathematics.js";
 import { EntityType } from "../Entity/EntityType.js";
+import { Entity } from "../Entity/Entity.js";
+import { InvalidEntity } from "../Entity/InvalidEntity.js";
 
 class RenderWorker {
     private cameraPosition: Position;
@@ -19,8 +19,8 @@ class RenderWorker {
 
     private imageData: number[];
 
-    backgroundColor1: Color;
-    backgroundColor2: Color;
+    private backgroundColor1: Color;
+    private backgroundColor2: Color;
 
     constructor(cameraPosition: Vector3, entityManager: EntityManager, startPosition: Position, endPosition: Position) {
         this.cameraPosition = cameraPosition;
@@ -52,7 +52,6 @@ class RenderWorker {
         for (let i: number = startY; i < endY; i++) {
             for (let j: number = startX; j < endX; j++) {
                 const color: Color = this.samplePixel(viewportStart, deltaHeight.multiply(i).add(deltaWidth.multiply(j)), deltaWidth, deltaHeight);
-
                 this.setPixel(j, i, color);
             }
         }
@@ -109,8 +108,6 @@ class RenderWorker {
             randomVector.fromUnitRandom(-1, 1);
 
             const surfaceNormal: Vector3 = hitInformation.getNormal();
-
-            // const surfaceVector: Vector3 = surfaceNormal.dot(randomVector) > 0 ? randomVector : randomVector.negate();
             const surfaceVector: Vector3 = surfaceNormal.add(randomVector);
             
             return this.traceRay(new Ray(hitInformation.getPosition(), surfaceVector), depth - 1).multiply(0.3);
@@ -128,20 +125,7 @@ onmessage = function(e: any): void {
     const otherCameraPosition: any = workerMessage.cameraPosition;
     const cameraPosition: Position = Vector3.createFromRaw(otherCameraPosition);
 
-    const otherEntityManager: any = workerMessage.entityManager;
-    const entityManager: EntityManager = new EntityManager();
-
-    const otherEntitiesLength: number = otherEntityManager.entities.length;
-    for (let i: number = 0; i < otherEntitiesLength; i++) {
-        const otherRawEntity: any = otherEntityManager.entities[i];
-
-        switch (otherRawEntity.type) {
-            case EntityType.Sphere:
-                const otherEntity: Sphere = Sphere.createFromRaw(otherRawEntity);
-                entityManager.addEntity(otherEntity);
-                break;
-        }
-    }
+    const entityManager: EntityManager = loadEntityManager(workerMessage.entityManager);
 
     const otherStartPosition: any = workerMessage.startPosition;
     const startPosition: Position = Vector3.createFromRaw(otherStartPosition);
@@ -153,4 +137,25 @@ onmessage = function(e: any): void {
     renderWorker.draw();
 
     this.postMessage(renderWorker.getImageData());
+}
+
+function loadEntityManager(other: any): EntityManager {
+    const entityManager: EntityManager = new EntityManager();
+
+    const otherEntitiesLength: number = other.entities.length;
+    for (let i: number = 0; i < otherEntitiesLength; i++) {
+        const entity: Entity = loadEntity(other.entities[i]);
+        entityManager.addEntity(entity);
+    }
+
+    return entityManager;
+}
+
+function loadEntity(other: any): Entity {
+    switch (other.type) {
+        case EntityType.Sphere:
+            return Sphere.createFromRaw(other);
+    }
+
+    return new InvalidEntity();
 }

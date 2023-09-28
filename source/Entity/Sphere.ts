@@ -13,18 +13,26 @@ class Sphere extends Entity {
     constructor(center?: Position, radius?: number) {
         super(EntityType.Sphere);
 
+        // RELEASE
+        if (center !== undefined && radius !== undefined) {
+            this.center = center;
+            this.radius = radius;
+            return;
+        }
+
         this.center = new Vector3();
         this.radius = 0;
         
-        let filledParameters: boolean;
-        if (filledParameters = center !== undefined && radius !== undefined) {
-            this.center = center;
-            this.radius = radius;
-        }
-
-        if (center !== undefined && !filledParameters) {
-            throw new Error("[Sphere]: Not all required parameters are filled.");
-        }
+        // DEBUG
+        // let filledParameters: boolean;
+        // if (filledParameters = center !== undefined && radius !== undefined) {
+        //     this.center = center;
+        //     this.radius = radius;
+        // }
+        
+        // if (center !== undefined && !filledParameters) {
+        //     throw new Error("[Sphere]: Not all required parameters are filled.");
+        // }
     }
 
     public fromValues(center: Position, radius: number): void {

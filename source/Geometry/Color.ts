@@ -6,6 +6,21 @@ class Color {
     private blue: number;
 
     constructor(red?: number | Color, green?: number, blue?: number) {
+        // RELEASE
+        if (red instanceof Color && green === undefined && blue === undefined) {
+            this.red = red.red;
+            this.green = red.green;
+            this.blue = red.blue;
+            return;
+        }
+
+        if (typeof red === "number" && green !== undefined  && blue !== undefined) {
+            this.red = red;
+            this.green = green;
+            this.blue = blue;
+            return;
+        }
+
         this.red = 0;
         this.green = 0;
         this.blue = 0;
@@ -28,17 +43,6 @@ class Color {
         // if (!noParameters && !filledParameters && !oneParameter) {
         //     throw new Error("[Color]: Not all required parameters are filled.");
         // }
-
-        // RELEASE
-        if (red instanceof Color && green === undefined && blue === undefined) {
-            this.fromColor(red);
-        }
-
-        if (typeof red === "number" && green !== undefined  && blue !== undefined) {
-            this.red = red;
-            this.green = green;
-            this.blue = blue;
-        }
     }
 
     public fromValues(red: number, green: number, blue: number): void {
@@ -47,9 +51,9 @@ class Color {
         this.blue = blue;
     }
     public fromColor(other: Color): void {
-        this.red = other.getRed();
-        this.green = other.getGreen();
-        this.blue = other.getBlue();
+        this.red = other.red;
+        this.green = other.green;
+        this.blue = other.blue;
     }
     public fromRandom(minimum: number, maximum: number): void {
         this.red = Mathematics.intervalRandom(minimum, maximum);
@@ -92,13 +96,13 @@ class Color {
     }
     public add(other: Color | number): Color {
         if (other instanceof Color) {
-            return new Color(this.red + other.getRed(), this.green + other.getGreen(), this.blue + other.getBlue());
+            return new Color(this.red + other.red, this.green + other.green, this.blue + other.blue);
         }
         return new Color(this.red + other, this.green + other, this.blue + other);
     }
     public multiply(other: Color | number): Color {
         if (other instanceof Color) {
-            return new Color(this.red * other.getRed(), this.green * other.getGreen(), this.blue * other.getBlue());
+            return new Color(this.red * other.red, this.green * other.green, this.blue * other.blue);
         }
         return new Color(this.red * other, this.green * other, this.blue * other);
     }
@@ -109,7 +113,7 @@ class Color {
         return new Color(Math.pow(this.red, other), Math.pow(this.green, other), Math.pow(this.blue, other));
     }
     public dot(other: Color): number {
-        return this.red * other.getRed() + this.green * other.getGreen() + this.blue * other.getBlue();
+        return this.red * other.red + this.green * other.green + this.blue * other.blue;
     }
     public normalize(): Color {
         const max: number = Math.max(Math.abs(this.red), Math.abs(this.green), Math.abs(this.blue));
