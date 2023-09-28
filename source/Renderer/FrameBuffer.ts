@@ -5,7 +5,8 @@ class FrameBuffer {
 
     private container: HTMLDivElement;
     private canvas: HTMLCanvasElement;
-    private progress: HTMLSpanElement;
+    private progressElement: HTMLSpanElement;
+    private timeTakenElement: HTMLSpanElement;
     private ctx: CanvasRenderingContext2D;
     private imageData: ImageData;
 
@@ -14,17 +15,20 @@ class FrameBuffer {
         this.container.className = "containerDiv";
         document.body.insertBefore(this.container, null);
 
-        this.canvas = document.createElement("canvas");
+        this.progressElement = document.createElement("span");
+        this.progressElement.className = "informationSpan";
+        this.container.insertBefore(this.progressElement, null);
 
+        this.timeTakenElement = document.createElement("span");
+        this.timeTakenElement.className = "informationSpan";
+        this.container.insertBefore(this.timeTakenElement, null);
+
+        this.canvas = document.createElement("canvas");
         this.canvas.width = RenderConfig.canvasWidth;
         this.canvas.height = RenderConfig.canvasHeight;
-
         this.container.insertBefore(this.canvas, null);
 
-        this.progress = document.createElement("span");
-        this.progress.className = "progressSpan";
-
-        this.container.insertBefore(this.progress, null);
+        
 
         const nullCtx: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
         if (nullCtx === null) {
@@ -54,8 +58,12 @@ class FrameBuffer {
         this.imageData.data[pixelIndex + 3] = 255;
     }
 
-    public updateProgress(): void {
-        this.progress.innerHTML = "Progress: " + this.updateProgress();
+    public updateProgress(progress: number): void {
+        this.progressElement.innerHTML = "Progress: " + Math.floor(progress * 10000) / 10000;
+    }
+
+    public updateTimeTaken(timeTaken: number): void {
+        this.timeTakenElement.innerHTML = "Time since start in milliseconds: " + timeTaken;
     }
 
     public draw(): void {

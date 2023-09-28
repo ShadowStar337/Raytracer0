@@ -1,31 +1,11 @@
-import { EntityManager } from "../Entity/EntityManager.js";
-import { Position } from "../Geometry/Position.js";
+import { MessageType } from "./MessageType.js";
 
 class WorkerMessage {
 
-    private cameraPosition: Position;
-    private entityManager: EntityManager;
-    private startPosition: Position;
-    private endPosition: Position;
+    type: MessageType;
 
-    constructor(cameraPosition: Position, entityManager: EntityManager, startPosition: Position, endPosition: Position) {
-        this.cameraPosition = cameraPosition;
-        this.entityManager = entityManager;
-        this.startPosition = startPosition;
-        this.endPosition = endPosition;
-    }
-
-    public getCameraPosition(): Position {
-        return this.cameraPosition;
-    }
-    public getEntityManager(): EntityManager {
-        return this.entityManager;
-    }
-    public getStartPosition(): Position {
-        return this.startPosition;
-    }
-    public getEndPosition(): Position {
-        return this.endPosition;
+    constructor(type: MessageType) {
+        this.type = type;
     }
 }
 

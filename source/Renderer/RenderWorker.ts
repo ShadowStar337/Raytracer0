@@ -10,8 +10,12 @@ import { Mathematics } from "../Generic/Mathematics.js";
 import { EntityType } from "../Entity/EntityType.js";
 import { Entity } from "../Entity/Entity.js";
 import { InvalidEntity } from "../Entity/InvalidEntity.js";
+import { MessageType } from "./MessageType.js";
+import { RenderMessage } from "./RenderMessage.js";
+import { ProgressResMessage } from "./ProgressResMessage.js";
 
 class RenderWorker {
+    private workerIndex: number;
     private cameraPosition: Position;
     private entityManager: EntityManager;
     private startPosition: Position;
@@ -19,10 +23,17 @@ class RenderWorker {
 
     private imageData: number[];
 
+    private workerPixels: number;
+    private finishedPixels: number;
+
     private backgroundColor1: Color;
     private backgroundColor2: Color;
 
-    constructor(cameraPosition: Vector3, entityManager: EntityManager, startPosition: Position, endPosition: Position) {
+    private previousTime: number;
+    private currentTime: number;
+
+    constructor(workerIndex: number, cameraPosition: Vector3, entityManager: EntityManager, startPosition: Position, endPosition: Position) {
+        this.workerIndex = workerIndex;
         this.cameraPosition = cameraPosition;
         this.entityManager = entityManager;
         this.startPosition = startPosition;
@@ -30,8 +41,18 @@ class RenderWorker {
 
         this.imageData = [];
 
+        const startX: number = this.startPosition.getX();
+        const startY: number = this.startPosition.getY();
+        const endX: number = this.endPosition.getX();
+        const endY: number = this.endPosition.getY();
+        this.workerPixels = Math.abs(endX - startX) * Math.abs(endY - startY);
+        this.finishedPixels = 0;
+
         this.backgroundColor1 = new Color(0.5, 0.7, 1.0);
         this.backgroundColor2 = new Color(1, 1, 1);
+
+        this.previousTime = 0;
+        this.currentTime = 0;
     }
 
     public draw(): void {
@@ -53,15 +74,31 @@ class RenderWorker {
             for (let j: number = startX; j < endX; j++) {
                 const color: Color = this.samplePixel(viewportStart, deltaHeight.multiply(i).add(deltaWidth.multiply(j)), deltaWidth, deltaHeight);
                 this.setPixel(j, i, color);
+                this.finishedPixels += 1;
+
+                this.currentTime = Date.now();
+                if (this.currentTime - this.previousTime > 1000) {
+                    this.sendProgress();
+                    this.previousTime = this.currentTime;
+                }
             }
         }
+    }
+
+    public getWorkerIndex(): number {
+        return this.workerIndex;
     }
 
     public getImageData(): number[] {
         return this.imageData;
     }
 
-    public setPixel(x: number, y: number, color: Color): void {
+    private sendProgress(): void {
+        const progress: number = this.finishedPixels / this.workerPixels;
+        postMessage(new ProgressResMessage(this.workerIndex, progress));
+    }
+
+    private setPixel(x: number, y: number, color: Color): void {
         const pixelIndex: number = y * RenderConfig.canvasWidth * 4 + x * 4;
         this.imageData[pixelIndex + 0] = color.getRed();
         this.imageData[pixelIndex + 1] = color.getGreen();
@@ -119,8 +156,18 @@ class RenderWorker {
     }
 }
 
+let renderWorker: RenderWorker;
+
 onmessage = function(e: any): void {
-    const workerMessage: any = e.data[0];
+    switch (e.data.type) {
+        case MessageType.PRELOAD:
+            loadPreload(e.data);
+            break;
+    }
+}
+
+function loadPreload(workerMessage: any): void {
+    const workerIndex: number = workerMessage.workerIndex;
 
     const otherCameraPosition: any = workerMessage.cameraPosition;
     const cameraPosition: Position = Vector3.createFromRaw(otherCameraPosition);
@@ -133,10 +180,12 @@ onmessage = function(e: any): void {
     const otherEndPosition: any = workerMessage.endPosition;
     const endPosition: Position = Vector3.createFromRaw(otherEndPosition);
 
-    const renderWorker: RenderWorker = new RenderWorker(cameraPosition, entityManager, startPosition, endPosition);
+    renderWorker = new RenderWorker(workerIndex, cameraPosition, entityManager, startPosition, endPosition);
     renderWorker.draw();
 
-    this.postMessage(renderWorker.getImageData());
+    const imageData: number[] = renderWorker.getImageData();
+
+    postMessage(new RenderMessage(workerIndex, imageData));
 }
 
 function loadEntityManager(other: any): EntityManager {
