@@ -5,10 +5,10 @@ import { Color } from "../Geometry/Color.js";
 import { EntityManager } from "../Entity/EntityManager.js";
 import { Entity } from "../Entity/Entity.js";
 import { RenderConfig } from "../RenderConfig.js";
-import { PreloadMessage } from "./PreloadMessage.js";
+import { PreloadMessage } from "./Message/PreloadMessage.js";
 import { WorkerPosition } from "./WorkerPosition.js";
-import { ProgressReqMessage } from "./ProgressReqMessage.js";
-import { MessageType } from "./MessageType.js";
+import { Mathematics } from "../Generic/Mathematics.js";
+import { MessageType } from "./Message/MessageType.js";
 
 class Renderer {
     private frameBuffer: FrameBuffer;
@@ -16,14 +16,15 @@ class Renderer {
 
     private cameraPosition: Position;
 
-    private workerRenderCount: number;
-    private workerProgressCount: number;
+    private finishedWorkerCount: number;
     private workerProgresses: number[];
+    private respondedWorkers: boolean[];
     private workers: Worker[];
     private workerPositions: WorkerPosition[];
 
     private startTime: number;
     private endTime: number;
+    private nextProgressUpdateTime: number;
 
     constructor() {
         this.frameBuffer = new FrameBuffer();
@@ -31,14 +32,15 @@ class Renderer {
 
         this.cameraPosition = new Vector3(0, 0, 0);
 
-        this.workerRenderCount = 0;
-        this.workerProgressCount = 0;
-        this.workerProgresses = [];
+        this.finishedWorkerCount = 0;
+        this.workerProgresses = new Array<number>(RenderConfig.threads);
+        this.respondedWorkers = new Array<boolean>(RenderConfig.threads);
         this.workers = [];
         this.workerPositions = [];
 
         this.startTime = 0;
         this.endTime = 0;
+        this.nextProgressUpdateTime = Mathematics.roundUp(Date.now(), 1000);
     }
 
     public addEntity(entity: Entity): void {
@@ -48,18 +50,17 @@ class Renderer {
     public draw(): void {
         this.startTime = Date.now();
 
+        this.workerProgresses.fill(0);
+        this.respondedWorkers.fill(false);
+
         for (let i: number = 0; i < RenderConfig.threads; i++) {
             this.createWorker(i);
         }
-
-        this.workerRenderCount = RenderConfig.threads;
-        this.workerProgressCount = 0;
     }
 
     private createWorker(workerIndex: number): void {
         const worker: Worker = new Worker("./js/Renderer/RenderWorker.js", { type: "module" });
         this.workers.push(worker);
-        this.workerProgresses.push(0);
 
         const threadHeight: number = RenderConfig.canvasHeight / RenderConfig.threads;
         const startY: number = Math.floor(threadHeight * workerIndex);
@@ -90,22 +91,26 @@ class Renderer {
         
         this.updateWorkerProgresses(workerIndex, workerProgress);
 
-        if (this.workerProgressCount === this.workerRenderCount) {
-            this.updateProgress();
-            this.resetWorkerProgresses();
+        if (this.allWorkersResponded() && Date.now() > this.nextProgressUpdateTime) {
+            this.nextProgressUpdateTime += 1000;
 
+            this.updateProgress();
             this.updateTimeTaken();
         }
     }
 
     private updateWorkerProgresses(workerIndex: number, workerProgress: number): void {
         this.workerProgresses[workerIndex] = workerProgress;
-        this.workerProgressCount += 1;
+        this.respondedWorkers[workerIndex] = true;
     }
 
-    private resetWorkerProgresses(): void {
-        this.workerProgressCount = 0;
-        this.workerProgresses.fill(1);
+    private allWorkersResponded(): boolean {
+        for (let i: number = 0; i < RenderConfig.threads; i++) {
+            if (!this.respondedWorkers[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private updateProgress(): void {
@@ -130,9 +135,7 @@ class Renderer {
         this.terminateWorker(workerIndex);
         this.loadWorkerRender(workerIndex, imageData);
     
-        if (this.workerRenderCount === 0) {
-            this.resetWorkerProgresses();
-            
+        if (this.finishedWorkerCount === RenderConfig.threads) {
             this.terminateDraw();
 
             this.updateProgress();
@@ -143,7 +146,8 @@ class Renderer {
     private terminateWorker(workerIndex: number): void {
         const worker: Worker = this.workers[workerIndex];
         worker.terminate();
-        this.workerRenderCount -= 1;
+        this.workerProgresses[workerIndex] = 1;
+        this.finishedWorkerCount += 1;
     }
 
     private loadWorkerRender(workerIndex: number, imageData: number[]): void {

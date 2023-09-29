@@ -10,9 +10,9 @@ import { Mathematics } from "../Generic/Mathematics.js";
 import { EntityType } from "../Entity/EntityType.js";
 import { Entity } from "../Entity/Entity.js";
 import { InvalidEntity } from "../Entity/InvalidEntity.js";
-import { MessageType } from "./MessageType.js";
-import { RenderMessage } from "./RenderMessage.js";
-import { ProgressResMessage } from "./ProgressResMessage.js";
+import { MessageType } from "./Message/MessageType.js";
+import { RenderMessage } from "./Message/RenderMessage.js";
+import { ProgressResMessage } from "./Message/ProgressResMessage.js";
 
 class RenderWorker {
     private workerIndex: number;
@@ -29,8 +29,7 @@ class RenderWorker {
     private backgroundColor1: Color;
     private backgroundColor2: Color;
 
-    private previousTime: number;
-    private currentTime: number;
+    private nextResponseTime: number;
 
     constructor(workerIndex: number, cameraPosition: Vector3, entityManager: EntityManager, startPosition: Position, endPosition: Position) {
         this.workerIndex = workerIndex;
@@ -51,8 +50,7 @@ class RenderWorker {
         this.backgroundColor1 = new Color(0.5, 0.7, 1.0);
         this.backgroundColor2 = new Color(1, 1, 1);
 
-        this.previousTime = 0;
-        this.currentTime = 0;
+        this.nextResponseTime = Mathematics.roundUp(Date.now(), 1000);
     }
 
     public draw(): void {
@@ -75,12 +73,6 @@ class RenderWorker {
                 const color: Color = this.samplePixel(viewportStart, deltaHeight.multiply(i).add(deltaWidth.multiply(j)), deltaWidth, deltaHeight);
                 this.setPixel(j, i, color);
                 this.finishedPixels += 1;
-
-                this.currentTime = Date.now();
-                if (this.currentTime - this.previousTime > 1000) {
-                    this.sendProgress();
-                    this.previousTime = this.currentTime;
-                }
             }
         }
     }
@@ -119,6 +111,11 @@ class RenderWorker {
 
             const ray: Ray = new Ray(this.cameraPosition, sampleViewportPoint.add(this.cameraPosition.negate()).normalize());
             sampleColors.push(this.traceRay(ray, RenderConfig.maxBouncesPerRay));
+
+            if (Date.now() > this.nextResponseTime) {
+                this.sendProgress();
+                this.nextResponseTime += 1000;
+            }
         }
 
         let sampleColorSum: Color = new Color(0, 0, 0);

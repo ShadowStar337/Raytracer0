@@ -1,5 +1,6 @@
 import { Color } from "../Geometry/Color.js";
 import { RenderConfig } from "../RenderConfig.js";
+import { Mathematics } from "../Generic/Mathematics.js";
 
 class FrameBuffer {
 
@@ -59,7 +60,7 @@ class FrameBuffer {
     }
 
     public updateProgress(progress: number): void {
-        this.progressElement.innerHTML = "Progress: " + Math.floor(progress * 10000) / 10000;
+        this.progressElement.innerHTML = "Progress: " + Mathematics.roundDownToPlace(progress, 100000);
     }
 
     public updateTimeTaken(timeTaken: number): void {

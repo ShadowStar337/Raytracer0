@@ -1,5 +1,5 @@
-import { EntityManager } from "../Entity/EntityManager.js";
-import { Position } from "../Geometry/Position.js";
+import { EntityManager } from "../../Entity/EntityManager.js";
+import { Position } from "../../Geometry/Position.js";
 import { WorkerMessage } from "./WorkerMessage.js";
 import { MessageType } from "./MessageType.js";
 
