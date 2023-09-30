@@ -3,8 +3,13 @@ import { Renderer } from "./Renderer/Renderer.js";
 import { Vector3 } from "./Generic/Vector3.js";
 
 window.addEventListener("load", main);
+
+/**
+ * The entry point of the program.
+ */
 function main(): void {
     const renderer = new Renderer();
+    renderer.init();
     renderer.addEntity(new Sphere(new Vector3(0, 0, -4), 2));
     renderer.addEntity(new Sphere(new Vector3(0, -102, -4), 100));
     renderer.draw();

@@ -1,5 +1,9 @@
+/**
+ * The type of a message.
+ */
+
 enum MessageType {
-    PRELOAD, PROGRESS_REQUEST, RENDER, PROGRESS_RESPONSE
+    PRELOAD, RENDER, PROGRESS_RESPONSE
 }
 
 export { MessageType };

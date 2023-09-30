@@ -1,19 +1,16 @@
 import { Position } from "../Geometry/Position.js";
 import { Vector3 } from "../Generic/Vector3.js";
 import { Ray } from "../Geometry/Ray.js";
-import { Color } from "../Geometry/Color.js";
+import { Color } from "../Generic/Color.js";
 import { HitInformation } from "../Geometry/HitInformation.js";
 import { EntityManager } from "../Entity/EntityManager.js";
-import { Sphere } from "../Entity/Sphere.js";
 import { RenderConfig } from "../RenderConfig.js";
 import { Mathematics } from "../Generic/Mathematics.js";
-import { EntityType } from "../Entity/EntityType.js";
-import { Entity } from "../Entity/Entity.js";
-import { InvalidEntity } from "../Entity/InvalidEntity.js";
 import { MessageType } from "./Message/MessageType.js";
 import { RenderMessage } from "./Message/RenderMessage.js";
-import { ProgressResMessage } from "./Message/ProgressResMessage.js";
+import { ProgressMessage } from "./Message/ProgressMessage.js";
 
+/** A web worker that renders a part of a scene. */
 class RenderWorker {
     private workerIndex: number;
     private cameraPosition: Position;
@@ -31,6 +28,14 @@ class RenderWorker {
 
     private nextResponseTime: number;
 
+    /**
+     * Constructs a new RenderWorker instance.
+     * @param workerIndex The index of the worker.
+     * @param cameraPosition The camera position of the scene.
+     * @param entityManager The entity manager to render with.
+     * @param startPosition The canvas start position of the worker.
+     * @param endPosition The canvas end position of the worker.
+     */
     constructor(workerIndex: number, cameraPosition: Vector3, entityManager: EntityManager, startPosition: Position, endPosition: Position) {
         this.workerIndex = workerIndex;
         this.cameraPosition = cameraPosition;
@@ -47,12 +52,15 @@ class RenderWorker {
         this.workerPixels = Math.abs(endX - startX) * Math.abs(endY - startY);
         this.finishedPixels = 0;
 
-        this.backgroundColor1 = new Color(0.5, 0.7, 1.0);
-        this.backgroundColor2 = new Color(1, 1, 1);
+        this.backgroundColor1 = new Vector3(0.5, 0.7, 1.0);
+        this.backgroundColor2 = new Vector3(1, 1, 1);
 
         this.nextResponseTime = Mathematics.roundUp(Date.now(), 1000);
     }
 
+    /**
+     * Renders part of a scene.
+     */
     public draw(): void {
         const viewportStartX: number = -RenderConfig.viewportWidth / 2;
         const viewportStartY: number = RenderConfig.viewportHeight / 2;
@@ -77,29 +85,54 @@ class RenderWorker {
         }
     }
 
+    /**
+     * Returns the index of the worker.
+     * @returns The index of the worker.
+     */
     public getWorkerIndex(): number {
         return this.workerIndex;
     }
 
+    /**
+     * Returns the image data of the worker.
+     * @returns The image data of the worker.
+     */
     public getImageData(): number[] {
         return this.imageData;
     }
 
+    /**
+     * Sends a progress message to the main thread with the current progress of this worker.
+     */
     private sendProgress(): void {
         const progress: number = this.finishedPixels / this.workerPixels;
-        postMessage(new ProgressResMessage(this.workerIndex, progress));
+        postMessage(new ProgressMessage(this.workerIndex, progress));
     }
 
+    /**
+     * Sets a pixel color of the image data of this worker.
+     * @param x The x-coordinate of the pixel.
+     * @param y The y-coordinate of the pixel.
+     * @param color The pixel color to set.
+     */
     private setPixel(x: number, y: number, color: Color): void {
         const pixelIndex: number = y * RenderConfig.canvasWidth * 4 + x * 4;
-        this.imageData[pixelIndex + 0] = color.getRed();
-        this.imageData[pixelIndex + 1] = color.getGreen();
-        this.imageData[pixelIndex + 2] = color.getBlue();
+        this.imageData[pixelIndex + 0] = color.getX();
+        this.imageData[pixelIndex + 1] = color.getY();
+        this.imageData[pixelIndex + 2] = color.getZ();
         this.imageData[pixelIndex + 3] = 1;
     }
 
-    private samplePixel(viewportStart: Position, currentDelta: Vector3, deltaWidth: Vector3, deltaHeight: Vector3): Color {
-        const viewportPoint: Position = viewportStart.add(currentDelta);
+    /**
+     * Samples a pixel by sending out multiple rays into the scene and averaging the collected light color.
+     * @param viewportStart The viewport start position of the pixel to sample.
+     * @param currentOffset The viewport of the pixel to sample.
+     * @param deltaWidth The width of the viewport delta.
+     * @param deltaHeight The height of the viewport delta.
+     * @returns The result of the sample.
+     */
+    private samplePixel(viewportStart: Position, currentOffset: Vector3, deltaWidth: Vector3, deltaHeight: Vector3): Color {
+        const viewportPoint: Position = viewportStart.add(currentOffset);
         const sampleColors: Color[] = [];
 
         for (let i: number = 0; i < RenderConfig.samplesPerPixel; i++) {
@@ -118,7 +151,7 @@ class RenderWorker {
             }
         }
 
-        let sampleColorSum: Color = new Color(0, 0, 0);
+        let sampleColorSum: Color = new Vector3(0, 0, 0);
         const sampleColorsLength: number = sampleColors.length;
         for (let i: number = 0; i < sampleColorsLength; i++) {
             const sampleColor: Color = sampleColors[i];
@@ -130,9 +163,15 @@ class RenderWorker {
         return sampleColorAverage;
     }
 
+    /**
+     * Calculates the collected light color of a ray recursively.
+     * @param ray The ray to calculate with.
+     * @param depth The remaining depth of the recursion.
+     * @returns The collected light color.
+     */
     private traceRay(ray: Ray, depth: number): Color {
         if (depth == 0) {
-            return new Color(0, 0, 0);
+            return new Vector3(0, 0, 0);
         }
 
         const hitInformation: HitInformation = this.entityManager.hit(ray, 0.001, Number.MAX_SAFE_INTEGER);
@@ -155,21 +194,31 @@ class RenderWorker {
 
 let renderWorker: RenderWorker;
 
-onmessage = function(e: any): void {
+onmessage = onMainMessage;
+
+/**
+ * Determines the action to take when a message is sent from the main thread to a worker.
+ */
+function onMainMessage(e: any): void {
     switch (e.data.type) {
         case MessageType.PRELOAD:
             loadPreload(e.data);
+            startRender();
             break;
     }
 }
 
+/**
+ * Loads a preload message into a RenderWorker instance.
+ * @param workerMessage 
+ */
 function loadPreload(workerMessage: any): void {
     const workerIndex: number = workerMessage.workerIndex;
 
     const otherCameraPosition: any = workerMessage.cameraPosition;
     const cameraPosition: Position = Vector3.createFromRaw(otherCameraPosition);
 
-    const entityManager: EntityManager = loadEntityManager(workerMessage.entityManager);
+    const entityManager: EntityManager = EntityManager.createFromRaw(workerMessage.entityManager);
 
     const otherStartPosition: any = workerMessage.startPosition;
     const startPosition: Position = Vector3.createFromRaw(otherStartPosition);
@@ -178,30 +227,15 @@ function loadPreload(workerMessage: any): void {
     const endPosition: Position = Vector3.createFromRaw(otherEndPosition);
 
     renderWorker = new RenderWorker(workerIndex, cameraPosition, entityManager, startPosition, endPosition);
+}
+
+/**
+ * Starts the render and sends a render message to the main thread when done.
+ */
+function startRender(): void {
     renderWorker.draw();
 
     const imageData: number[] = renderWorker.getImageData();
 
-    postMessage(new RenderMessage(workerIndex, imageData));
-}
-
-function loadEntityManager(other: any): EntityManager {
-    const entityManager: EntityManager = new EntityManager();
-
-    const otherEntitiesLength: number = other.entities.length;
-    for (let i: number = 0; i < otherEntitiesLength; i++) {
-        const entity: Entity = loadEntity(other.entities[i]);
-        entityManager.addEntity(entity);
-    }
-
-    return entityManager;
-}
-
-function loadEntity(other: any): Entity {
-    switch (other.type) {
-        case EntityType.Sphere:
-            return Sphere.createFromRaw(other);
-    }
-
-    return new InvalidEntity();
+    postMessage(new RenderMessage(renderWorker.getWorkerIndex(), imageData));
 }

@@ -2,11 +2,21 @@ import { Vector3 } from "../Generic/Vector3.js";
 import { Position } from "./Position.js";
 import { Direction } from "./Direction.js";
 
+/** A ray consisting of an origin and a direction. */
 class Ray {
 
-    private origin: Vector3;
-    private direction: Vector3;
+    private origin: Position;
+    private direction: Direction;
 
+    /**
+     * Constructs a new Ray instance.
+     * If no parameters are set, this ray will be empty.
+     * If one parameter is set, this ray will take the values of the other ray as its own values.
+     * If all parameters are set, this ray will take the parameters as its own values.
+     * @param origin Either the origin of this ray, another ray, or undefined.
+     * @param direction Either the direction of this ray or undefined.
+     * @returns A new Ray instance.
+     */
     constructor(origin?: Vector3 | Ray, direction?: Vector3) {
         // RELEASE
         if (origin instanceof Ray && direction === undefined) {
@@ -43,25 +53,48 @@ class Ray {
         // }
     }
 
+    /**
+     * Replaces the values of this ray with the values of the parameters.
+     * @param origin The new origin.
+     * @param direction The new direction.
+     */
     public fromValues(origin: Vector3, direction: Vector3): void {
         this.origin = origin;
         this.direction = direction;
     }
 
+    /**
+     * Replaces the values of this ray with the values of another ray.
+     * @param other The other ray.
+     */
     public fromRay(other: Ray): void {
         this.origin = other.origin;
         this.direction = other.direction;
     }
 
+    /**
+     * Returns the origin of this ray.
+     * @returns The origin of this ray.
+     */
     public getOrigin(): Position {
-        return this.origin as Position;
-    }
-    public getDirection(): Direction {
-        return this.direction as Direction;
+        return this.origin;
     }
 
+    /**
+     * Returns the direction of this ray.
+     * @returns The direction of this ray.
+     */
+    public getDirection(): Direction {
+        return this.direction;
+    }
+
+    /**
+     * Calculates the position at a certain ray time.
+     * @param time The ray time.
+     * @returns The position.
+     */
     public at(time: number): Position {
-        return this.origin.add(this.direction.multiply(time)) as Position;
+        return this.origin.add(this.direction.multiply(time));
     }
 }
 

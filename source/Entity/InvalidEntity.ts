@@ -3,11 +3,24 @@ import { EntityType } from "./EntityType.js";
 import { Ray } from "../Geometry/Ray.js";
 import { HitInformation } from "../Geometry/HitInformation.js";
 
+/**
+ * An invalid or uninitialized object in a scene.
+ */
 class InvalidEntity extends Entity {
+    /**
+     * Constructs a new InvalidEntity instance.
+     */
     constructor() {
         super(EntityType.None);
     }
 
+    /**
+     * Returns an empty HitInformation.
+     * @param ray Does nothing.
+     * @param minimumTime Does nothing.
+     * @param maximumTime Does nothing.
+     * @returns An empty HitInformation.
+     */
     public hit(ray: Ray, minimumTime: number, maximumTime: number): HitInformation {
         return new HitInformation();
     }

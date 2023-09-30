@@ -1,6 +1,7 @@
 import { Vector3 } from "../Generic/Vector3.js";
 import { Position } from "./Position.js";
 
+/** Information about an intersection of a ray and an entity. */
 class HitInformation {
     private hit: boolean;
     private position: Position;
@@ -8,6 +9,18 @@ class HitInformation {
     private normal: Vector3;
     private outwardFace: boolean;
 
+    /**
+     * Constructs a new HitInformation instance.
+     * If no parameters are set, this hit information will be empty.
+     * If one parameter is set, this hit information will take the values of the other hit information as its own values.
+     * If all parameters are set, this hit information will take the parameters as its own values.
+     * @param hit Either whether an hit actually exists, another hit information, or undefined.
+     * @param position Either the position of the hit or undefined.
+     * @param time Either the ray time when the hit occurs or undefined.
+     * @param normal Either the surface normal of the entity of the hit or undefined.
+     * @param outwardFace Either whether the ray struck an outward face of the entity or undefined.
+     * @returns A new HitInformation instance.
+     */
     constructor(hit?: boolean | HitInformation, position?: Position, time?: number, normal?: Vector3, outwardFace?: boolean) {
         // RELEASE
         if (hit instanceof HitInformation && position === undefined && time === undefined && normal === undefined && outwardFace === undefined) {
@@ -58,6 +71,14 @@ class HitInformation {
         // }
     }
 
+    /**
+     * Replaces the values of this hit information with the values of the parameters.
+     * @param hit Whether an hit actually exists.
+     * @param position The position of the hit.
+     * @param time The ray time when the hit occurs.
+     * @param normal The surface normal of the entity of the hit.
+     * @param outwardFace Whether the ray struck an outward face of the entity.
+     */
     public fromValues(hit: boolean, position: Position, time: number, normal: Vector3, outwardFace: boolean) {
         this.hit = hit;
         this.position.fromVector3(position);
@@ -66,6 +87,10 @@ class HitInformation {
         this.outwardFace = outwardFace;
     }
 
+    /**
+     * Replaces the values of this hit information with the values of another hit information.
+     * @param other The other hit information.
+     */
     public fromHitInformation(other: HitInformation) {
         this.hit = other.hit;
         this.position.fromVector3(other.position);
@@ -74,18 +99,42 @@ class HitInformation {
         this.outwardFace = other.outwardFace;
     }
 
+    /**
+     * Returns whether an hit actually exists.
+     * @returns Whether an hit actually exists.
+     */
     public getHit(): boolean {
         return this.hit;
     }
+
+    /**
+     * Returns the position of the hit.
+     * @returns The position of the hit.
+     */
     public getPosition(): Position {
         return this.position;
     }
+
+    /**
+     * Returns the ray time when the hit occurs.
+     * @returns The ray time when the hit occurs.
+     */
     public getTime(): number {
         return this.time;
     }
+
+    /**
+     * Returns the surface normal of the entity of the hit.
+     * @returns The surface normal of the entity of the hit.
+     */
     public getNormal(): Vector3 {
         return this.normal;
     }
+
+    /**
+     * Returns whether the ray struck an outward face of the entity.
+     * @returns Whether the ray struck an outward face of the entity.
+     */
     public getOutwardFace(): boolean {
         return this.outwardFace;
     }

@@ -6,10 +6,21 @@ import { Vector3 } from "../Generic/Vector3.js";
 import { Entity } from "../Entity/Entity.js";
 import { EntityType } from "./EntityType.js";
 
+/**
+ * A spherical object in a scene.
+ */
 class Sphere extends Entity {
     private center: Position;
     private radius: number;
 
+    /**
+     * Constructs a new Sphere instance.
+     * If no parameters are set, this sphere will be empty.
+     * If all parameters are set, this sphere will take the parameters as its values.
+     * @param center Either the center of this sphere or undefined.
+     * @param radius Either the radius of this sphere or undefined.
+     * @returns A new Sphere instane.
+     */
     constructor(center?: Position, radius?: number) {
         super(EntityType.Sphere);
 
@@ -35,19 +46,39 @@ class Sphere extends Entity {
         // }
     }
 
+    /**
+     * Replaces the values of this sphere with the values of the parameters.
+     * @param center The new center of this sphere.
+     * @param radius The new radius of this sphere.
+     */
     public fromValues(center: Position, radius: number): void {
         this.center = center;
         this.radius = radius;
     }
 
+    /**
+     * Returns the center of this sphere.
+     * @returns The center of this sphere.
+     */
     public getCenter(): Position {
         return this.center;
     }
 
+    /**
+     * Returns the radius of this sphere.
+     * @returns The radius of this sphere.
+     */
     public getRadius(): number {
         return this.radius;
     }
 
+    /**
+     * Tests for the earliest intersection of a ray and this sphere.
+     * @param ray The ray to use for the ray intersection test.
+     * @param minimumTime The minimum ray time to consider during the ray intersection test.
+     * @param maximumTime The maximum ray time to consider during the ray intersection test.
+     * @returns Information about the ray intersection.
+     */
     public hit(ray: Ray, minimumTime: number, maximumTime: number): HitInformation {
         const rayDirection: Direction = ray.getDirection();
         // origin minus center
@@ -97,6 +128,11 @@ class Sphere extends Entity {
         return new HitInformation(discriminant > 0, position, lowestTime, normal, outwardFace);
     }
 
+    /**
+     * Constructs a new Sphere instance from a raw object.
+     * @param other The raw object.
+     * @returns A new Sphere instance.
+     */
     public static createFromRaw(other: any): Sphere {
         const rawCenter: any = other.center;
         const center: Vector3 = Vector3.createFromRaw(rawCenter);
