@@ -1,19 +1,20 @@
-import { Ray } from "../Geometry/Ray.js";
-import { HitInformation } from "../Geometry/HitInformation.js";
+import { Ray } from "../../Geometry/Ray.js";
+import { HitInformation } from "../HitInformation.js";
 import { EntityType } from "./EntityType.js";
+import { Material } from "../Material/Material.js";
 
-/**
- * A single object in a scene.
- */
+/** A single object in a scene. */
 abstract class Entity {
-    type: EntityType;
+    protected type: EntityType;
+    protected material: Material;
 
     /**
      * Constructs a new Entity instance.
      * @param type The type of this entity.
      */
-    constructor(type: EntityType) {
+    constructor(type: EntityType, material: Material) {
         this.type = type;
+        this.material = material;
     }
 
     /**

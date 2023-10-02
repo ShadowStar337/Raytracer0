@@ -1,6 +1,7 @@
 import { Position } from "../Geometry/Position.js";
 import { Vector3 } from "../Generic/Vector3.js";
 
+/** The canvas position of a worker. */
 class WorkerPosition {
 
     private startPosition: Position;

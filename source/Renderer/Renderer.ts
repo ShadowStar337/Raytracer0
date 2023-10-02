@@ -3,12 +3,13 @@ import { Position } from "../Geometry/Position.js";
 import { Vector3 } from "../Generic/Vector3.js";
 import { Color } from "../Generic/Color.js";
 import { EntityManager } from "../Entity/EntityManager.js";
-import { Entity } from "../Entity/Entity.js";
+import { Entity } from "../Entity/Entity/Entity.js";
 import { RenderConfig } from "../RenderConfig.js";
 import { PreloadMessage } from "./Message/PreloadMessage.js";
 import { WorkerPosition } from "./WorkerPosition.js";
 import { Mathematics } from "../Generic/Mathematics.js";
 import { MessageType } from "./Message/MessageType.js";
+import { WorkerInformation } from "./WorkerInformation.js";
 
 /** A renderer that manages the render of a scene. */
 class Renderer {
@@ -18,10 +19,7 @@ class Renderer {
     private cameraPosition: Position;
 
     private workerRenderCount: number;
-    private workerProgresses: number[];
-    private respondedWorkers: boolean[];
-    private workers: Worker[];
-    private workerPositions: WorkerPosition[];
+    private workerInformations: Map<number, WorkerInformation>;
 
     private startTime: number;
     private endTime: number;
@@ -37,10 +35,7 @@ class Renderer {
         this.cameraPosition = new Vector3(0, 0, 0);
 
         this.workerRenderCount = 0;
-        this.workerProgresses = new Array<number>(RenderConfig.threads);
-        this.respondedWorkers = new Array<boolean>(RenderConfig.threads);
-        this.workers = [];
-        this.workerPositions = [];
+        this.workerInformations = new Map<number, WorkerInformation>();
 
         this.startTime = 0;
         this.endTime = 0;
@@ -67,13 +62,22 @@ class Renderer {
      */
     public draw(): void {
         this.startTime = Date.now();
-
-        this.workerProgresses.fill(0);
-        this.respondedWorkers.fill(false);
-
+    
         for (let i: number = 0; i < RenderConfig.threads; i++) {
             this.createWorker(i);
         }
+    }
+
+    /**
+     * Retrieves a worker information with its index.
+     * @param workerIndex The index of the worker.
+     */
+    private getWorkerInformation(workerIndex: number): WorkerInformation {
+        const workerInformation: WorkerInformation | undefined = this.workerInformations.get(workerIndex);
+        if (workerInformation === undefined) {
+            throw new Error("[Renderer]: Invalid workerIndex: " + workerIndex);
+        }
+        return workerInformation;
     }
 
     /**
@@ -82,14 +86,16 @@ class Renderer {
      */
     private createWorker(workerIndex: number): void {
         const worker: Worker = new Worker("./js/Renderer/RenderWorker.js", { type: "module" });
-        this.workers.push(worker);
 
         const threadHeight: number = RenderConfig.canvasHeight / RenderConfig.threads;
         const startY: number = Math.floor(threadHeight * workerIndex);
         const endY: number = Math.floor(threadHeight * (workerIndex + 1));
         const startPosition: Position = new Vector3(0, startY, 0);
         const endPosition: Position = new Vector3(RenderConfig.canvasWidth, endY, 0);
-        this.workerPositions.push(new WorkerPosition(startPosition, endPosition));
+        const workerPosition: WorkerPosition = new WorkerPosition(startPosition, endPosition);
+
+        const workerInformation: WorkerInformation = new WorkerInformation(worker, workerPosition, 0, false);
+        this.workerInformations.set(workerIndex, workerInformation);
 
         worker.postMessage(new PreloadMessage(workerIndex, this.cameraPosition, this.entityManager, startPosition, endPosition));
 
@@ -134,8 +140,9 @@ class Renderer {
      * @param workerProgress The progress of the worker.
      */
     private updateWorkerProgresses(workerIndex: number, workerProgress: number): void {
-        this.workerProgresses[workerIndex] = workerProgress;
-        this.respondedWorkers[workerIndex] = true;
+        const workerInformation: WorkerInformation = this.getWorkerInformation(workerIndex);
+        workerInformation.progress = workerProgress;
+        workerInformation.responded = true;
     }
 
     /**
@@ -144,7 +151,9 @@ class Renderer {
      */
     private allWorkersResponded(): boolean {
         for (let i: number = 0; i < RenderConfig.threads; i++) {
-            if (!this.respondedWorkers[i]) {
+            const workerInformation: WorkerInformation = this.getWorkerInformation(i);
+
+            if (!workerInformation.responded) {
                 return false;
             }
         }
@@ -165,7 +174,8 @@ class Renderer {
     private updateProgress(): void {
         let sum: number = 0;
         for (let i: number = 0; i < RenderConfig.threads; i++) {
-            const workerProgress: number = this.workerProgresses[i];
+            const workerInformation: WorkerInformation = this.getWorkerInformation(i);
+            const workerProgress: number = workerInformation.progress;
             sum += workerProgress;
         }
 
@@ -203,9 +213,10 @@ class Renderer {
      * @param workerIndex The index of the worker to terminate.
      */
     private terminateWorker(workerIndex: number): void {
-        const worker: Worker = this.workers[workerIndex];
+        const workerInformation: WorkerInformation = this.getWorkerInformation(workerIndex);
+        const worker: Worker = workerInformation.worker;
         worker.terminate();
-        this.workerProgresses[workerIndex] = 1;
+        workerInformation.progress = 1;
         this.workerRenderCount += 1;
     }
 
@@ -215,7 +226,8 @@ class Renderer {
      * @param imageData The image data of the worker.
      */
     private loadWorkerRender(workerIndex: number, imageData: number[]): void {
-        const workerPosition: WorkerPosition = this.workerPositions[workerIndex];
+        const workerInformation: WorkerInformation = this.getWorkerInformation(workerIndex);
+        const workerPosition: WorkerPosition = workerInformation.position;
         const startPosition: Position = workerPosition.getStartPosition();
         const endPosition: Position = workerPosition.getEndPosition();
 
@@ -238,7 +250,6 @@ class Renderer {
      * Terminates the render.
      */
     private terminateDraw(): void {
-        this.workers = [];
         this.frameBuffer.draw(); 
     }
 

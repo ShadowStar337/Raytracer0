@@ -2,13 +2,14 @@ import { Position } from "../Geometry/Position.js";
 import { Vector3 } from "../Generic/Vector3.js";
 import { Ray } from "../Geometry/Ray.js";
 import { Color } from "../Generic/Color.js";
-import { HitInformation } from "../Geometry/HitInformation.js";
+import { HitInformation } from "../Entity/HitInformation.js";
 import { EntityManager } from "../Entity/EntityManager.js";
 import { RenderConfig } from "../RenderConfig.js";
 import { Mathematics } from "../Generic/Mathematics.js";
 import { MessageType } from "./Message/MessageType.js";
 import { RenderMessage } from "./Message/RenderMessage.js";
 import { ProgressMessage } from "./Message/ProgressMessage.js";
+import { ScatterInformation } from "../Entity/ScatterInformation.js";
 
 /** A web worker that renders a part of a scene. */
 class RenderWorker {
@@ -53,7 +54,7 @@ class RenderWorker {
         this.finishedPixels = 0;
 
         this.backgroundColor1 = new Vector3(0.5, 0.7, 1.0);
-        this.backgroundColor2 = new Vector3(1, 1, 1);
+        this.backgroundColor2 = new Vector3(1.0, 1.0, 1.0);
 
         this.nextResponseTime = Mathematics.roundUp(Date.now(), 1000);
     }
@@ -177,13 +178,12 @@ class RenderWorker {
         const hitInformation: HitInformation = this.entityManager.hit(ray, 0.001, Number.MAX_SAFE_INTEGER);
 
         if (hitInformation.getHit()) {
-            const randomVector: Vector3 = new Vector3();
-            randomVector.fromUnitRandom(-1, 1);
+            const scatterInformation: ScatterInformation = hitInformation.getMaterial().scatter(ray, hitInformation);
 
-            const surfaceNormal: Vector3 = hitInformation.getNormal();
-            const surfaceVector: Vector3 = surfaceNormal.add(randomVector);
-            
-            return this.traceRay(new Ray(hitInformation.getPosition(), surfaceVector), depth - 1).multiply(0.3);
+            if (scatterInformation.getScattered()) {
+                return this.traceRay(scatterInformation.getScatteredRay(), depth - 1).multiply(scatterInformation.getAttentuation());
+            }
+            return new Vector3(0, 0, 0);
         }
 
         const normalizedY: number = (ray.getDirection().getY() + 1) * 0.5;

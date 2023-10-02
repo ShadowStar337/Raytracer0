@@ -1,9 +1,7 @@
-import { Entity } from "./Entity.js";
-import { HitInformation } from "../Geometry/HitInformation.js";
+import { Entity } from "./Entity/Entity.js";
+import { HitInformation } from "./HitInformation.js";
 import { Ray } from "../Geometry/Ray.js";
-import { EntityType } from "./EntityType.js";
-import { Sphere } from "./Sphere.js";
-import { InvalidEntity } from "./InvalidEntity.js";
+import { Creator } from "../Utility/Creator.js";
 
 /**
  * A collection of entities.
@@ -69,24 +67,11 @@ class EntityManager {
     
         const otherEntitiesLength: number = other.entities.length;
         for (let i: number = 0; i < otherEntitiesLength; i++) {
-            const entity: Entity = this.createEntityFromRaw(other.entities[i]);
+            const entity: Entity = Creator.createEntityFromRaw(other.entities[i]);
             entityManager.addEntity(entity);
         }
     
         return entityManager;
-    }
-
-    /**
-     * Determines the entity type to create a new Entity instance with.
-     * @returns The new Entity instance with the determined entity type.
-     */
-    private static createEntityFromRaw(other: any): Entity {
-        switch (other.type) {
-            case EntityType.Sphere:
-                return Sphere.createFromRaw(other);
-        }
-    
-        return new InvalidEntity();
     }
 }
 
